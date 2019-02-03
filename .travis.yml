@@ -1,0 +1,37 @@
+language: assembly
+
+os: linux
+sudo: false
+dist: trusty
+
+env:
+  global:
+    - DEVKITPRO=/opt/devkitpro    
+    - DEVKITARM=/opt/devkitpro/devkitARM
+    
+cache:
+  directories:
+    - "$HOME/.local"
+    - "$DEVKITPRO"
+
+before_install:
+  - curl -L https://github.com/devkitPro/pacman/releases/download/devkitpro-pacman-1.0.1/devkitpro-pacman.deb -o pacman.deb
+
+install:
+  - sudo dpkg -i pacman.deb
+  - sudo dkp-pacman -Sy
+  - sudo dkp-pacman -S devkitARM general-tools dstools ndstool libnds libfat-nds --noconfirm
+  - export DEVKITPRO=/opt/devkitpro
+  - export DEVKITARM=${DEVKITPRO}/devkitARM
+
+script:
+  - make
+  
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-4.9
+    - g++-4.9
+    - libstdc++6
