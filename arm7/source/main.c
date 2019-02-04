@@ -29,7 +29,6 @@
 ---------------------------------------------------------------------------------*/
 #include <nds.h>
 #include <string.h>
-#include <maxmod7.h>
 
 unsigned int * SCFG_EXT=(unsigned int*)0x4004008;
 
@@ -115,8 +114,6 @@ int main() {
 	touchInit();
 	
 	fifoInit();
-	
-	// mmInstall(FIFO_MAXMOD);
 	
 	SetYtrigger(80);
 	
