@@ -1120,12 +1120,9 @@ void FindAppendedRom(void)
 int main(void)
 {
 
-	iprintf("\nTrying 2 init FAT...\n");
 	defaultExceptionHandler();
 
 	bool fatInited = fatInitDefault();
-
-	iprintf("\nTrying 1 init FAT...\n");
 
 	// ClearMemory();
 	resetMemory2_ARM9();
@@ -1219,6 +1216,7 @@ int main(void)
 
 	// iprintf("About to call InitFiles()...\n");
 
+
 #ifdef ARM9_SOUND
 	PsndRate = 11025;
 #endif
@@ -1228,17 +1226,14 @@ int main(void)
 
 
 	if(fatInited) {
-		iprintf("\nTrying 3 init FAT...\n");
 		iprintf("\x1b[2J");
 		
 		// Wait two VBlanks as instructed in the FAT docs
 		swiWaitForVBlank();
 		swiWaitForVBlank();
-		iprintf("\nTrying 4 init FAT...\n");
+
 		chdir("/");
-		iprintf("\nTrying 5 init FAT...\n");
 		FileChoose();
-		iprintf("\nTrying 6 init FAT...\n");
 	}
 	else {
 		iprintf("FAT init failed.\n");
