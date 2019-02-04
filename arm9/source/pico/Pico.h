@@ -10,7 +10,7 @@
 // For commercial use, separate licencing terms must be obtained.
 
 #include <stdio.h>
-#include <nds/jtypes.h>
+#include <nds/ndstypes.h>
 // #include "fat/gba_nds_fat.h"
 #include "config.h"
 

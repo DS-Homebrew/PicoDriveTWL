@@ -129,9 +129,9 @@ int PicoLine(int scan);
 void PicoFrameFull();
 
 // Memory.c
-int PicoInitPc(unsigned int pc);
-unsigned short CPU_CALL PicoRead16(unsigned int a);
-unsigned int CPU_CALL PicoRead32(unsigned int a);
+int PicoInitPc(u32 pc);
+unsigned short CPU_CALL PicoRead16(u32 a);
+u32 CPU_CALL PicoRead32(u32 a);
 int PicoMemInit();
 void PicoDasm(int start,int len);
 unsigned char z80_read(unsigned short a);

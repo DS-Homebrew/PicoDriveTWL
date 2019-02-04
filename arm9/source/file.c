@@ -84,6 +84,7 @@ void freeFileList() {
 //---------------------------------------------------------------------------------
 void showFileList() {
 //---------------------------------------------------------------------------------
+	iprintf("\nshowFileList()");
 	if ( NULL == fileList ) return;
 
 	struct fileEntry *entry = fileList;
@@ -116,7 +117,7 @@ void showFileList() {
 		entry = entry->next;
 	}
 	// iprintf("\x1b[22;0HnumFiles: %d    ",numFiles);
-	
+	iprintf(" done");
 }
 
 DIR_ITER* dir;
@@ -124,22 +125,44 @@ DIR_ITER* dir;
 //---------------------------------------------------------------------------------
 void getFileList() {
 //---------------------------------------------------------------------------------
-	iprintf("\x1b[6;0H\x1b[0J");
-	freeFileList();
+	// iprintf("\x1b[6;0H\x1b[0J");
+	iprintf("\ngetFileList()");
+	// freeFileList();
 	
-	int type;
-	struct stat st;
+	// int type;
+	// struct stat st;
 	
-	while ( dirnext(dir, fileName, &st) == 0 ) {
-		if(st.st_mode & S_IFDIR)
-			type = FT_DIR;
-		else
-			type = FT_FILE;
+	// while ( readdir_r(dir, fileName, &st) == 0 ) {
+	// 	if(st.st_mode & S_IFDIR)
+	// 		type = FT_DIR;
+	// 	else
+	// 		type = FT_FILE;
 		
-		addFile( type, fileName );
-	}
+	// 	addFile( type, fileName );
+	// }
 	
-	dirclose(dir);
+	// closedir(dir);
+
+	DIR *pdir;
+	struct dirent *pent;
+
+	pdir=opendir("/");
+
+	if (pdir){
+
+		while ((pent=readdir(pdir))!=NULL) {
+				if(strcmp(".", pent->d_name) == 0 || strcmp("..", pent->d_name) == 0)
+						continue;
+				if(pent->d_type == DT_DIR)
+						iprintf("[%s]\n", pent->d_name);
+				else
+						iprintf("%s\n", pent->d_name);
+		}
+		closedir(pdir);
+	} else {
+		iprintf ("opendir() failure; terminating\n");
+	}
+	iprintf(" done");
 }
 
 char *cursorPos = "\x1b[0;0H  ";
@@ -199,7 +222,7 @@ void updateCursor() {
 FILE* loadFile() {
   int keysPressed, keysReleased, keysDownNonRepeat;
   iprintf("\x1b[4;10HLoad File");
-  dir = diropen(".");
+  // dir = opendir(".");
   getFileList();
   showFileList();
   // iprintf("numFiles: %d\n",numFiles);	
@@ -218,7 +241,7 @@ FILE* loadFile() {
 		
 		if ( keysPressed & KEY_B ) {
 			chdir("..");
-			dir = diropen(".");
+			dir = opendir(".");
 			getFileList();
 			showFileList();
 			cursorLine=6;
@@ -238,7 +261,7 @@ FILE* loadFile() {
 			
 			if ( file->type == FT_DIR ) {
 				chdir(file->name);
-				dir = diropen(".");
+				dir = opendir(".");
 				getFileList();
 				showFileList();
 				cursorLine=6;

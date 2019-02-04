@@ -32,12 +32,12 @@
 #define REG_IF	(*(vuint32*)0x04000214)
 #define REG_IME	(*(vuint16*)0x04000208)
  
-inline void dmaFillWords(const void* src, void* dest, uint32 size) {
-	DMA_SRC(3)  = (uint32)src;
-	DMA_DEST(3) = (uint32)dest;
-	DMA_CR(3)   = DMA_COPY_WORDS | DMA_SRC_FIX | (size>>2);
-	while(DMA_CR(3) & DMA_BUSY);
-}
+// inline void dmaFillWords(const void* src, void* dest, uint32 size) {
+// 	DMA_SRC(3)  = (uint32)src;
+// 	DMA_DEST(3) = (uint32)dest;
+// 	DMA_CR(3)   = DMA_COPY_WORDS | DMA_SRC_FIX | (size>>2);
+// 	while(DMA_CR(3) & DMA_BUSY);
+// }
  
 /*-------------------------------------------------------------------------
 resetMemory1_ARM9
@@ -136,8 +136,8 @@ void __attribute__ ((long_call)) resetMemory2_ARM9 (void)
  
 	VRAM_CR = 0x80808080;
 	(*(vu32*)0x027FFE04) = 0;   // temporary variable
-	PALETTE[0] = 0xFFFF;
-	dmaFillWords((void*)0x027FFE04, PALETTE+1, (2*1024)-2);
+	BG_PALETTE[0] = 0xFFFF;
+	dmaFillWords((void*)0x027FFE04, BG_PALETTE+1, (2*1024)-2);
 	dmaFillWords((void*)0x027FFE04, OAM,     2*1024);
 	dmaFillWords((void*)0x027FFE04, (void*)0x04000000, 0x56);  //clear main display registers
 	dmaFillWords((void*)0x027FFE04, (void*)0x04001000, 0x56);  //clear sub  display registers

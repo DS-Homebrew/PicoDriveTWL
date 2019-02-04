@@ -79,9 +79,9 @@ void UpdatePalette()
 
 void bgupdate()
 {
-	s16 c = COS[0] >> 4;
-	BG3_XDX = ( c * (xdxval))>>8;
-	BG3_YDY = ( c * (ydyval))>>8;
+	// s16 c = COS[0] >> 4;
+	// BG3_XDX = ( c * (xdxval))>>8;
+	// BG3_YDY = ( c * (ydyval))>>8;
 	iprintf("\x1b[16;0Hxdxval: %d    \n",xdxval);
 	iprintf("ydyval: %d    ",ydyval);
 }
@@ -405,26 +405,26 @@ int32 cx=32,cy=16;
 
 void ChangeScaleMode()
 {
-	s16 c = COS[0] >> 4;
+	// s16 c = COS[0] >> 4;
 	scalemode = (scalemode + 1) % 3;
 	switch(scalemode) {
 	case 0: // fullscreen
-		BG3_XDX = ( c * (316))>>8;
-		BG3_YDY = ( c * (300))>>8;
-		BG3_CX  = 0;
-		BG3_CY  = 0;
+		// BG3_XDX = ( c * (316))>>8;
+		// BG3_YDY = ( c * (300))>>8;
+		// BG3_CX  = 0;
+		// BG3_CY  = 0;
 		break;
 	case 1: // aspect
-		BG3_XDX = ( c * (316))>>8;
-		BG3_YDY = ( c * (316))>>8;
-		BG3_CX  = 0;
-		BG3_CY  = (-6) << 8;
+		// BG3_XDX = ( c * (316))>>8;
+		// BG3_YDY = ( c * (316))>>8;
+		// BG3_CX  = 0;
+		// BG3_CY  = (-6) << 8;
 		break;
 	case 2: // 1:1
-		BG3_XDX = ( c * (256))>>8;
-		BG3_YDY = ( c * (256))>>8;
-		BG3_CX = cx << 8;
-		BG3_CY = cy << 8;
+		// BG3_XDX = ( c * (256))>>8;
+		// BG3_YDY = ( c * (256))>>8;
+		// BG3_CX = cx << 8;
+		// BG3_CY = cy << 8;
 		break;
 	default:
 		break;
@@ -465,8 +465,8 @@ void ChangeScreenPosition()
 			cx = 60;
 		}
 		
-		BG3_CX = cx << 8;
-		BG3_CY = cy << 8;
+		// BG3_CX = cx << 8;
+		// BG3_CY = cy << 8;
 		// iprintf("\x1b[17;0Hcy: %d  \n",cy);
 		// iprintf("cx: %d  ",cx);
 		scanKeys();
@@ -817,12 +817,12 @@ void on_irq()
 			// DrawFrame();
 		}
 		// Tell the DS we handled the VBLANK interrupt
-		VBLANK_INTR_WAIT_FLAGS |= IRQ_VBLANK;
+		INTR_WAIT_FLAGS |= IRQ_VBLANK;
 		REG_IF |= IRQ_VBLANK;
 	}
 	else if(REG_IF & IRQ_TIMER0) {
 		processtimer();
-		VBLANK_INTR_WAIT_FLAGS |= IRQ_TIMER0;
+		INTR_WAIT_FLAGS |= IRQ_TIMER0;
 	}
 	else {
 		// Ignore all other interrupts
@@ -1016,7 +1016,7 @@ int EmulateInit()
 	
 	// iprintf("\x1b[10;0H");
 	iprintf("\n\t\tPicoDriveDS ");
-	iprintf(VERSION_NO);
+	// iprintf(VERSION_NO);
 	iprintf("\n");
 
 	choosingfile = 0;
@@ -1024,8 +1024,8 @@ int EmulateInit()
 	cx = 32;
 	cy = 16;
 	if(scalemode == 2) {
-		BG3_CX = cx << 8;
-		BG3_CY = cy << 8;
+		// BG3_CX = cx << 8;
+		// BG3_CY = cy << 8;
 	}
 
 	return 0;
@@ -1119,9 +1119,17 @@ void FindAppendedRom(void)
 
 int main(void)
 {
+
+	iprintf("\nTrying 2 init FAT...\n");
+	defaultExceptionHandler();
+
+	bool fatInited = fatInitDefault();
+
+	iprintf("\nTrying 1 init FAT...\n");
+
 	// ClearMemory();
 	resetMemory2_ARM9();
-	powerON(POWER_ALL);
+	powerOn(POWER_ALL);
 
 	struct mallinfo mi;
 	
@@ -1138,13 +1146,13 @@ int main(void)
 	vramSetMainBanks(VRAM_A_MAIN_BG, VRAM_B_MAIN_BG, VRAM_C_SUB_BG , VRAM_D_LCD);
 
 #ifdef SW_FRAME_RENDERER
-	BG3_CR = BG_BMP16_512x256;
+	// BG3_CR = BG_BMP16_512x256;
 	PicoPrepareCram = UpdatePalette;
 	PicoCramHigh = cram_high;
 #endif
 	
 #ifdef SW_SCAN_RENDERER
-	BG3_CR = BG_BMP16_512x256;
+	// BG3_CR = BG_BMP16_512x256;
 	PicoCramHigh = cram_high;
 #endif
 
@@ -1166,7 +1174,7 @@ int main(void)
 	}
 #endif
 
-	s16 c = COS[0] >> 4;
+	// s16 c = COS[0] >> 4;
 
 	// s16 s = SIN[0] >> 4;
 	// BG3_XDX = ( c * (319))>>8;
@@ -1181,10 +1189,10 @@ int main(void)
 	BG3_CY = 16 << 8;
 	*/
 
-	BG3_CX  = 0;
-	BG3_CY  = 0;
-	BG3_XDX = ( c * (316))>>8;
-	BG3_YDY = ( c * (300))>>8;
+	// BG3_CX  = 0;
+	// BG3_CY  = 0;
+	// BG3_XDX = ( c * (316))>>8;
+	// BG3_YDY = ( c * (300))>>8;
 	// BG3_CY = 6 << 8;
 
 
@@ -1195,12 +1203,13 @@ int main(void)
 	BG3_YDY = 1 << 8;
 	*/
 
-	SUB_BG0_CR = BG_MAP_BASE(31);
+	// SUB_BG0_CR = BG_MAP_BASE(31);
 
 	// Set the colour of the font to White.
 	BG_PALETTE_SUB[255] = RGB15(31,31,31);
 
-	consoleInitDefault((u16*)SCREEN_BASE_BLOCK_SUB(31), (u16*)CHAR_BASE_BLOCK_SUB(0), 16);
+	// consoleInitDefault((u16*)SCREEN_BASE_BLOCK_SUB(31), (u16*)CHAR_BASE_BLOCK_SUB(0), 16);
+	consoleDemoInit();
 
 	// lcdSwap();
 
@@ -1215,15 +1224,21 @@ int main(void)
 #endif
 	
 	iprintf("\nTrying to init FAT...\n");
-	if(fatInitDefault()) {
+	
+
+
+	if(fatInited) {
+		iprintf("\nTrying 3 init FAT...\n");
 		iprintf("\x1b[2J");
 		
 		// Wait two VBlanks as instructed in the FAT docs
 		swiWaitForVBlank();
 		swiWaitForVBlank();
-		
+		iprintf("\nTrying 4 init FAT...\n");
 		chdir("/");
+		iprintf("\nTrying 5 init FAT...\n");
 		FileChoose();
+		iprintf("\nTrying 6 init FAT...\n");
 	}
 	else {
 		iprintf("FAT init failed.\n");
