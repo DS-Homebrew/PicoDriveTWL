@@ -28,54 +28,10 @@
 
 ---------------------------------------------------------------------------------*/
 #include <nds.h>
-#include <string.h>
-
-unsigned int * SCFG_EXT=(unsigned int*)0x4004008;
-
-static int soundVolume = 127;
-
-//static bool gotCartHeader = false;
-
-//---------------------------------------------------------------------------------
-void soundFadeOut() {
-//---------------------------------------------------------------------------------
-	soundVolume -= 3;
-	if (soundVolume < 0) {
-		soundVolume = 0;
-	}
-}
-
-//---------------------------------------------------------------------------------
-void ReturntoDSiMenu() {
-//---------------------------------------------------------------------------------
-	if (isDSiMode()) {
-		i2cWriteRegister(0x4A, 0x70, 0x01);		// Bootflag = Warmboot/SkipHealthSafety
-		i2cWriteRegister(0x4A, 0x11, 0x01);		// Reset to DSi Menu
-	} else {
-		u8 readCommand = readPowerManagement(0x10);
-		readCommand |= BIT(0);
-		writePowerManagement(0x10, readCommand);
-	}
-}
-
-//---------------------------------------------------------------------------------
-//void UpdateCardInfo(void) {
-//---------------------------------------------------------------------------------
-	//cardReadHeader((u8*)0x02000000);
-//}
 
 //---------------------------------------------------------------------------------
 void VblankHandler(void) {
 //---------------------------------------------------------------------------------
-	if(fifoCheckValue32(FIFO_USER_01)) {
-		soundFadeOut();
-	} else {
-		soundVolume = 127;
-	}
-	REG_MASTER_VOLUME = soundVolume;
-	if(fifoCheckValue32(FIFO_USER_02)) {
-		ReturntoDSiMenu();
-	}
 }
 
 //---------------------------------------------------------------------------------
@@ -95,8 +51,6 @@ void powerButtonCB() {
 //---------------------------------------------------------------------------------
 int main() {
 //---------------------------------------------------------------------------------
-    nocashMessage("ARM7 main.c main");
-	
 	// clear sound registers
 	dmaFillWords(0, (void*)0x04000400, 0x100);
 
@@ -123,34 +77,14 @@ int main() {
 	irqSet(IRQ_VCOUNT, VcountHandler);
 	irqSet(IRQ_VBLANK, VblankHandler);
 
-	irqEnable( IRQ_VBLANK | IRQ_VCOUNT );
+	irqEnable( IRQ_VBLANK | IRQ_VCOUNT | IRQ_NETWORK );
 
 	setPowerButtonCB(powerButtonCB);
 	
-	fifoSendValue32(FIFO_USER_03, *SCFG_EXT);
-	fifoSendValue32(FIFO_USER_07, *(u16*)(0x4004700));
-	fifoSendValue32(FIFO_USER_06, 1);
-	
-	int timeTilVolumeLevelRefresh = 0;
-
 	// Keep the ARM7 mostly idle
 	while (!exitflag) {
 		if ( 0 == (REG_KEYINPUT & (KEY_SELECT | KEY_START | KEY_L | KEY_R))) {
 			exitflag = true;
-		}
-		/*if (!gotCartHeader && fifoCheckValue32(FIFO_USER_04)) {
-			UpdateCardInfo();
-			fifoSendValue32(FIFO_USER_04, 0);
-			gotCartHeader = true;
-		}*/
-		resyncClock();
-		timeTilVolumeLevelRefresh++;
-		if (timeTilVolumeLevelRefresh == 8) {
-			if (isDSiMode()) {
-				*(u8*)(0x027FF000) = i2cReadRegister(I2C_PM, I2CREGPM_VOL);
-			}
-			*(u8*)(0x027FF001) = (isDSiMode() ? i2cReadRegister(I2C_PM, I2CREGPM_BATTERY) : readPowerManagement(PM_BATTERY_REG));
-			timeTilVolumeLevelRefresh = 0;
 		}
 		swiWaitForVBlank();
 	}
