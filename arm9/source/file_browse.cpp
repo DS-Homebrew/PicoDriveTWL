@@ -215,7 +215,7 @@ string browseForFile (const vector<string>& extensionList) {
 		}
 
 		if (pressed & KEY_START) {
-			return NULL;
+			return "NULL";
 		}
 	}
 }

@@ -880,13 +880,15 @@ int FileChoose()
 	extensionList.emplace_back(".gen");
 	extensionList.emplace_back(".smd");
 
-	sprintf(fileName, "%s", browseForFile(extensionList).c_str());
-	romfile=fopen(fileName, "rb");
+	std::string filename = browseForFile(extensionList);
 
-	if(romfile == NULL) {
+	romfile=fopen(filename.c_str(), "rb");
+
+	if(strcmp(filename.c_str(), "NULL") == 0 || romfile == NULL) {
 		return 0; // we didn't get a file
 	}
 	else {
+		sprintf(fileName, "%s", filename.c_str());
 		return 1; // we got a file
 	}
 }
