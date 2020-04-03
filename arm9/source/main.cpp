@@ -847,9 +847,9 @@ void LidHandler() {
 
 void InitInterruptHandler()
 {
-	irqInit();
-	irqEnable(IRQ_VBLANK);
+	//irqInit();
 	irqSet(IRQ_VBLANK, processvblank);
+	irqEnable(IRQ_VBLANK);
 	// irqSet(IRQ_LID, LidHandler);
 	// irqEnable(IRQ_LID);
 	// Setup a 100Hz = 10ms timer
@@ -1143,10 +1143,12 @@ int main(void)
 
 	// Set up the sub screen
 	videoSetModeSub(MODE_5_2D | DISPLAY_BG0_ACTIVE);
-	//vramSetBankA(VRAM_A_MAIN_BG);
-	// vramSetBankC(VRAM_C_SUB_BG);
+	vramSetBankA(VRAM_A_MAIN_BG);
+	vramSetBankB(VRAM_B_MAIN_BG);
+	vramSetBankC(VRAM_C_SUB_BG);
+	vramSetBankD(VRAM_D_LCD);
 
-	vramSetMainBanks(VRAM_A_MAIN_BG, VRAM_B_MAIN_BG, VRAM_C_SUB_BG , VRAM_D_LCD);
+	//vramSetMainBanks(VRAM_A_MAIN_BG, VRAM_B_MAIN_BG, VRAM_C_SUB_BG , VRAM_D_LCD);
 
 #ifdef SW_FRAME_RENDERER
 	REG_BG3CNT = BG_BMP16_512x256;
