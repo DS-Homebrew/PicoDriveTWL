@@ -79,9 +79,9 @@ void UpdatePalette()
 
 void bgupdate()
 {
-	// s16 c = COS[0] >> 4;
-	// BG3_XDX = ( c * (xdxval))>>8;
-	// BG3_YDY = ( c * (ydyval))>>8;
+	s16 c = cosLerp(0) >> 4;
+	REG_BG3PA = ( c * (xdxval))>>8;
+	REG_BG3PB = ( c * (ydyval))>>8;
 	iprintf("\x1b[16;0Hxdxval: %d    \n",xdxval);
 	iprintf("ydyval: %d    ",ydyval);
 }
@@ -405,26 +405,26 @@ int32 cx=32,cy=16;
 
 void ChangeScaleMode()
 {
-	// s16 c = COS[0] >> 4;
+	s16 c = cosLerp(0) >> 4;
 	scalemode = (scalemode + 1) % 3;
 	switch(scalemode) {
 	case 0: // fullscreen
-		// BG3_XDX = ( c * (316))>>8;
-		// BG3_YDY = ( c * (300))>>8;
-		// BG3_CX  = 0;
-		// BG3_CY  = 0;
+		REG_BG3PA = ( c * (316))>>8;
+		REG_BG3PB = ( c * (300))>>8;
+		REG_BG3X  = 0;
+		REG_BG3Y  = 0;
 		break;
 	case 1: // aspect
-		// BG3_XDX = ( c * (316))>>8;
-		// BG3_YDY = ( c * (316))>>8;
-		// BG3_CX  = 0;
-		// BG3_CY  = (-6) << 8;
+		REG_BG3PA = ( c * (316))>>8;
+		REG_BG3PB = ( c * (316))>>8;
+		REG_BG3X  = 0;
+		REG_BG3Y  = (-6) << 8;
 		break;
 	case 2: // 1:1
-		// BG3_XDX = ( c * (256))>>8;
-		// BG3_YDY = ( c * (256))>>8;
-		// BG3_CX = cx << 8;
-		// BG3_CY = cy << 8;
+		REG_BG3PA = ( c * (256))>>8;
+		REG_BG3PB = ( c * (256))>>8;
+		REG_BG3X = cx << 8;
+		REG_BG3Y = cy << 8;
 		break;
 	default:
 		break;
@@ -465,8 +465,8 @@ void ChangeScreenPosition()
 			cx = 60;
 		}
 		
-		// BG3_CX = cx << 8;
-		// BG3_CY = cy << 8;
+		REG_BG3X = cx << 8;
+		REG_BG3Y = cy << 8;
 		// iprintf("\x1b[17;0Hcy: %d  \n",cy);
 		// iprintf("cx: %d  ",cx);
 		scanKeys();
@@ -1024,8 +1024,8 @@ int EmulateInit()
 	cx = 32;
 	cy = 16;
 	if(scalemode == 2) {
-		// BG3_CX = cx << 8;
-		// BG3_CY = cy << 8;
+		REG_BG3X = cx << 8;
+		REG_BG3Y = cy << 8;
 	}
 
 	return 0;
@@ -1125,10 +1125,10 @@ int main(void)
 	bool fatInited = fatInitDefault();
 
 	// ClearMemory();
-	resetMemory2_ARM9();
+	//resetMemory2_ARM9();
 	powerOn(POWER_ALL);
 
-	struct mallinfo mi;
+	//struct mallinfo mi;
 	
 	// videoSetMode(MODE_FB0);
 	// vramSetBankA(VRAM_A_LCD);
@@ -1137,25 +1137,27 @@ int main(void)
 
 	// Set up the sub screen
 	videoSetModeSub(MODE_5_2D | DISPLAY_BG0_ACTIVE);
-	// vramSetBankA(VRAM_A_MAIN_BG);
-	// vramSetBankC(VRAM_C_SUB_BG);
+	vramSetBankA(VRAM_A_MAIN_BG);
+	vramSetBankB(VRAM_B_MAIN_BG);
+	vramSetBankC(VRAM_C_SUB_BG);
+	vramSetBankD(VRAM_D_LCD);
 
-	vramSetMainBanks(VRAM_A_MAIN_BG, VRAM_B_MAIN_BG, VRAM_C_SUB_BG , VRAM_D_LCD);
+	//vramSetMainBanks(VRAM_A_MAIN_BG, VRAM_B_MAIN_BG, VRAM_C_SUB_BG , VRAM_D_LCD);
 
 #ifdef SW_FRAME_RENDERER
-	// BG3_CR = BG_BMP16_512x256;
+	REG_BG3CNT = BG_BMP16_512x256;
 	PicoPrepareCram = UpdatePalette;
 	PicoCramHigh = cram_high;
 #endif
 	
 #ifdef SW_SCAN_RENDERER
-	// BG3_CR = BG_BMP16_512x256;
+	REG_BG3CNT = BG_BMP16_512x256;
 	PicoCramHigh = cram_high;
 #endif
 
 #ifdef NDS_FRAME_RENDERER
 	BG0_CR = BG_64x64 | BG_TILE_BASE(4) | BG_MAP_BASE(0) | BG_COLOR_256;
-	// BG3_CR = ROTBG_SIZE_512x512 | BG_TILE_BASE(4) | BG_MAP_BASE(0);
+	REG_BG3CNT = ROTBG_SIZE_512x512 | BG_TILE_BASE(4) | BG_MAP_BASE(0);
 	
 	uint16 val;
 	for(val = 0; val < 256; val++) {
@@ -1171,13 +1173,13 @@ int main(void)
 	}
 #endif
 
-	// s16 c = COS[0] >> 4;
+	s16 c = cosLerp(0) >> 4;
 
 	// s16 s = SIN[0] >> 4;
-	// BG3_XDX = ( c * (319))>>8;
+	REG_BG3PA = ( c * (319))>>8;
 	// BG3_XDY = (-s * (320-8))>>8;
 	// BG3_YDX = ( s * (512-224+8))>>8;
-	// BG3_YDY = ( c * (300))>>8;
+	REG_BG3PB = ( c * (300))>>8;
 
 	/*
 	BG3_XDX = ( c * (256))>>8;
@@ -1186,11 +1188,11 @@ int main(void)
 	BG3_CY = 16 << 8;
 	*/
 
-	// BG3_CX  = 0;
-	// BG3_CY  = 0;
-	// BG3_XDX = ( c * (316))>>8;
-	// BG3_YDY = ( c * (300))>>8;
-	// BG3_CY = 6 << 8;
+	REG_BG3X  = 0;
+	REG_BG3Y  = 0;
+	REG_BG3PA = ( c * (316))>>8;
+	REG_BG3PB = ( c * (300))>>8;
+	REG_BG3Y = 6 << 8;
 
 
 	/*
@@ -1200,7 +1202,7 @@ int main(void)
 	BG3_YDY = 1 << 8;
 	*/
 
-	// SUB_BG0_CR = BG_MAP_BASE(31);
+	// REG_BG0CNT_SUB = BG_MAP_BASE(31);
 
 	// Set the colour of the font to White.
 	BG_PALETTE_SUB[255] = RGB15(31,31,31);
