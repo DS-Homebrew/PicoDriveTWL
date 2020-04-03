@@ -24,13 +24,6 @@ using namespace std;
 #include "zlib.h"
 #endif
 
-// #include "fat/gba_nds_fat.h"
-// #include "fat/disc_io.h"
-
-#ifdef ARM9_SOUND
-TransferSoundData picosound;
-#endif
-
 #include <sys/stat.h>
 #define DEVICE_TYPE_SCSD 0x44534353
 #define DEVICE_TYPE_SCCF 0x46434353
@@ -117,22 +110,6 @@ void InitSound()
 		free(PsndOut);
 
 	PsndOut = (short *)malloc(PsndLen);
-	setGenericSound(
-		PsndRate,
-		127,
-		64,
-		0
-	);
-	/*
-	picosound = (TransferSoundData) {
-		PsndOut,	// sample address
-		PsndLen<<2,	// sample length
-		PsndRate,	// sample rate
-		127,		// volume
-		64,			// panning
-		1			// format
-	};
-	*/
 }
 #endif
 
@@ -596,7 +573,7 @@ static int DoFrame()
 
 #ifdef ARM9_SOUND
 	if(PsndOut)
-		playGenericSound(PsndOut,PsndLen);
+		soundPlaySample((const void *)PsndOut, SoundFormat_16Bit, PsndLen, PsndRate, 127, 64, false, 0);
 #endif
 
 	// FramesDone++;
@@ -1130,6 +1107,7 @@ int main(void)
 	defaultExceptionHandler();
 
 	bool fatInited = fatInitDefault();
+	soundEnable();
 
 	// ClearMemory();
 	//resetMemory2_ARM9();
