@@ -78,14 +78,14 @@ void UpdatePalette()
 }
 #endif
 
-void bgupdate()
+/*void bgupdate()
 {
 	s16 c = cosLerp(0) >> 4;
 	REG_BG3PA = ( c * (xdxval))>>8;
-	REG_BG3PB = ( c * (ydyval))>>8;
+	REG_BG3PD = ( c * (ydyval))>>8;
 	iprintf("\x1b[16;0Hxdxval: %d    \n",xdxval);
 	iprintf("ydyval: %d    ",ydyval);
-}
+}*/
 
 void PrintRegion()
 {
@@ -411,19 +411,19 @@ void ChangeScaleMode()
 	switch(scalemode) {
 	case 0: // fullscreen
 		REG_BG3PA = ( c * (316))>>8;
-		REG_BG3PB = ( c * (300))>>8;
+		REG_BG3PD = ( c * (300))>>8;
 		REG_BG3X  = 0;
 		REG_BG3Y  = 0;
 		break;
 	case 1: // aspect
 		REG_BG3PA = ( c * (316))>>8;
-		REG_BG3PB = ( c * (316))>>8;
+		REG_BG3PD = ( c * (316))>>8;
 		REG_BG3X  = 0;
 		REG_BG3Y  = (-6) << 8;
 		break;
 	case 2: // 1:1
 		REG_BG3PA = ( c * (256))>>8;
-		REG_BG3PB = ( c * (256))>>8;
+		REG_BG3PD = ( c * (256))>>8;
 		REG_BG3X = cx << 8;
 		REG_BG3Y = cy << 8;
 		break;
@@ -1182,9 +1182,9 @@ int main(void)
 
 	// s16 s = SIN[0] >> 4;
 	// REG_BG3PA = ( c * (319))>>8;
-	// BG3_XDY = (-s * (320-8))>>8;
-	// BG3_YDX = ( s * (512-224+8))>>8;
-	// REG_BG3PB = ( c * (300))>>8;
+	// REG_BG3PB = (-s * (320-8))>>8;
+	// REG_BG3PC = ( s * (512-224+8))>>8;
+	// REG_BG3PD = ( c * (300))>>8;
 
 	/*
 	BG3_XDX = ( c * (256))>>8;
@@ -1196,7 +1196,7 @@ int main(void)
 	REG_BG3X  = 0;
 	REG_BG3Y  = 0;
 	REG_BG3PA = ( c * (316))>>8;
-	REG_BG3PB = ( c * (300))>>8;
+	REG_BG3PD = ( c * (300))>>8;
 	// REG_BG3Y = 6 << 8;
 
 
