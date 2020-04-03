@@ -50,7 +50,7 @@ static unsigned int RomSize=0;
 static bool UsingAppendedRom = false;
 // separate from UsingAppendedRom, we need to track if we're using
 // GBAROM as writable memory
-static bool UsingGBAROM = false;
+static bool UsingExtendedMemory = false;
 
 FILE *romfile;
 
@@ -902,10 +902,10 @@ int EmulateExit()
 
 		// Remove cartridge
 		PicoCartInsert(NULL,0);
-		if (RomData && !UsingAppendedRom && !UsingGBAROM) {
+		if (RomData && !UsingAppendedRom && !UsingExtendedMemory) {
 			free(RomData); RomData=NULL; RomSize=0;
 		}
-		else if(RomData && UsingGBAROM) {
+		else if(RomData && UsingExtendedMemory) {
 			RomData=NULL; RomSize=0;
 		}
 
@@ -955,43 +955,42 @@ int EmulateInit()
 			fseek(romfile,0,SEEK_END);
 			i = ftell(romfile);
 			// iprintf("ftell: %i\n",i);
-#ifdef USE_EXTRA_RAM
-			if(i >= 3200000) {
+			if (isDSiMode()) {
+				UsingExtendedMemory = true;
+				LoadROMToMemory((uint16*)0x02800000,i);
+			} else if(i >= 0x280000) {
 				struct stat st;
 				stat("/",&st);
 				if((st.st_dev == DEVICE_TYPE_SCSD) || (st.st_dev == DEVICE_TYPE_SCCF)) { // cart is SCSD/SCCF
 					iprintf("Using SuperCard RAM\n");
 
-					UsingGBAROM = true;
+					UsingExtendedMemory = true;
 
 					// Unlock SDRAM
 					*SC_UNLOCK = 0xa55a;
 					*SC_UNLOCK = 0xa55a;
 					*SC_UNLOCK = 0x0007;
 					*SC_UNLOCK = 0x0007;
-										
+
 					LoadROMToMemory(GBAROM,i);
 				}
 				else { // check for Opera RAM expansion
 					OPERA_UNLOCK = 0x0001;
-					DC_FlushAll( );
+					DC_FlushAll();
 					*OPERA_RAM = 0xF00D;
 					if(*OPERA_RAM == 0xF00D) { // we successfully wrote into OPERA_RAM
 						iprintf("Using Opera RAM Expansion\n");
-						
-						UsingGBAROM = true;
-						
+
+						UsingExtendedMemory = true;
+
 						LoadROMToMemory((uint16*)OPERA_RAM,i);
 					}
 				}
 			}
 			else {
-#endif
-				UsingGBAROM = false;
+				UsingExtendedMemory = false;
 				PicoCartLoad(romfile,&RomData,&RomSize);
-#ifdef USE_EXTRA_RAM
 			}
-#endif
 			fclose(romfile);
 			iprintf("Loaded.\n");
 
