@@ -57,6 +57,8 @@ u32 xdxval = 320;
 u32 ydyval = 300;
 
 short scalemode = 0;
+bool width256 = false;
+bool currentWidth = false;
 
 #if defined(SW_FRAME_RENDERER) || defined(SW_SCAN_RENDERER)
 static unsigned short cram_high[0x40];
@@ -384,18 +386,23 @@ int32 cx=32,cy=16;
 void ChangeScaleMode()
 {
 	s16 c = cosLerp(0) >> 4;
-	scalemode = (scalemode + 1) % 3;
+	int xSize = 316;
+	int xPos = 0;
+	if (width256) {
+		xSize = 256;
+		xPos = 32;
+	}
 	switch(scalemode) {
 	case 0: // fullscreen
-		REG_BG3PA = ( c * (316))>>8;
+		REG_BG3PA = ( c * (xSize))>>8;
 		REG_BG3PD = ( c * (300))>>8;
-		REG_BG3X  = 0;
+		REG_BG3X  = xPos << 8;
 		REG_BG3Y  = 0;
 		break;
 	case 1: // aspect
-		REG_BG3PA = ( c * (316))>>8;
+		REG_BG3PA = ( c * (xSize))>>8;
 		REG_BG3PD = ( c * (316))>>8;
-		REG_BG3X  = 0;
+		REG_BG3X  = xPos << 8;
 		REG_BG3Y  = (-6) << 8;
 		break;
 	case 2: // 1:1
@@ -535,7 +542,7 @@ static int DoFrame()
 		iprintf("HIT DOFRAME\n");
 	int pad=0;
 	// char map[8]={0,1,2,3,5,6,4,7}; // u/d/l/r/b/c/a/start
-	
+
 	scanKeys();
 	int keysPressed = keysHeld();
 	int kd = keysDown();
@@ -548,19 +555,26 @@ static int DoFrame()
 	if (keysPressed & KEY_A) pad|=1<<5;
 	if (keysPressed & KEY_Y) pad|=1<<6;
 	if (keysPressed & KEY_START) pad|=1<<7;
-	
+
 	if (keysPressed & KEY_X) {
 		SaveStateMenu();
 	}
-	
+
 	if ((keysPressed & KEY_R) && (scalemode == 2)) {
 		ChangeScreenPosition();
 	}
-	
+
 	if (keysPressed & KEY_L) {
 		if(kd & KEY_L) {
+			scalemode = (scalemode + 1) % 3;
 			ChangeScaleMode();
 		}
+	}
+	
+	width256 = (((Pico.video.reg[12] & 1) == 0) /*&& !(PicoIn.AHW & PAHW_SMS)*/);
+	if (currentWidth != width256) {
+		if (scalemode != 2) ChangeScaleMode();
+		currentWidth = width256;
 	}
 
 	if (kd & KEY_SELECT) {
