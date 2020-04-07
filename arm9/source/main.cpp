@@ -382,6 +382,25 @@ int saveLoadGame(int load, int sram)
 }
 
 int32 cx=32,cy=16;
+bool sVibrate = false;
+
+void dosVibrate()
+{
+	s16 c = cosLerp(0) >> 4;
+	int xSize = 316;
+	if (width256) {
+		xSize = 256;
+	}
+	switch(scalemode) {
+	case 0: // aspect
+		REG_BG3PA = ( c * (xSize))>>8;
+		REG_BG3PD = ( c * (316+sVibrate))>>8;
+		break;
+	case 1: // 1:1
+	default:
+		break;
+	}
+}
 
 void ChangeScaleMode()
 {
@@ -393,19 +412,13 @@ void ChangeScaleMode()
 		xPos = 32;
 	}
 	switch(scalemode) {
-	case 0: // fullscreen
+	case 0: // aspect
 		REG_BG3PA = ( c * (xSize))>>8;
-		REG_BG3PD = ( c * (300))>>8;
-		REG_BG3X  = xPos << 8;
-		REG_BG3Y  = 0;
-		break;
-	case 1: // aspect
-		REG_BG3PA = ( c * (xSize))>>8;
-		REG_BG3PD = ( c * (316))>>8;
+		REG_BG3PD = ( c * (316+sVibrate))>>8;
 		REG_BG3X  = xPos << 8;
 		REG_BG3Y  = (-6) << 8;
 		break;
-	case 2: // 1:1
+	case 1: // 1:1
 		REG_BG3PA = ( c * (256))>>8;
 		REG_BG3PD = ( c * (256))>>8;
 		REG_BG3X = cx << 8;
@@ -560,21 +573,23 @@ static int DoFrame()
 		SaveStateMenu();
 	}
 
-	if ((keysPressed & KEY_R) && (scalemode == 2)) {
+	if ((keysPressed & KEY_R) && (scalemode == 1)) {
 		ChangeScreenPosition();
 	}
 
 	if (keysPressed & KEY_L) {
 		if(kd & KEY_L) {
-			scalemode = (scalemode + 1) % 3;
+			scalemode = (scalemode + 1) % 2;
 			ChangeScaleMode();
 		}
 	}
 	
 	width256 = (((Pico.video.reg[12] & 1) == 0) /*&& !(PicoIn.AHW & PAHW_SMS)*/);
 	if (currentWidth != width256) {
-		if (scalemode != 2) ChangeScaleMode();
+		if (scalemode != 1) ChangeScaleMode();
 		currentWidth = width256;
+	} else {
+		dosVibrate();
 	}
 
 	if (kd & KEY_SELECT) {
@@ -691,21 +706,23 @@ static int DrawFrame()
 	UpdatePalette();
 	PicoScan=EmulateScanBG3; // Setup scanline callback
 #endif
-		
+
 	DoFrame();
 
 #ifdef SW_FRAME_RENDERER
 	unsigned int scan;
-	
+
 	for(scan = 223+8; scan > 8; scan--) {
 		dmaCopy(realbuff+(328*scan)+8,BG_GFX+(512*(scan-8)),320*2);
 	}
 #endif
-		
+
 #ifdef SW_SCAN_RENDERER
 	PicoScan=NULL;
 #endif
 	
+	sVibrate = !sVibrate;
+
 	pdFrameCount++;
 	return 0;
 }
@@ -713,34 +730,36 @@ static int DrawFrame()
 
 void EmulateFrame()
 {
-	if(DEBUG)
-		iprintf("HIT EMULATEFRAME\n");
-
-	int i=0,need=0;
-	// int time=0,frame=0;
-
 	if (choosingfile || RomData==NULL) {
 		//iprintf("YOUR ROM DATA IS NULL THAT IS NOT GOOD\n");
 		// swiDelay(100000);
 		return;
 	}
 
-	need = DESIRED_FPS - FPS;
-	// iprintf("\x1b[19;0HFPS: %d     \n",FPS);
-	// iprintf("Need: %d    ",need);
+	if(DEBUG)
+		iprintf("HIT EMULATEFRAME\n");
 
-	if(need <= 0) {
-		return;
-	}
+	//if (!isDSiMode()) {
+		int need=0;
+		// int time=0,frame=0;
 
-	if (need>MAX_FRAMESKIP) need=MAX_FRAMESKIP; // Limit frame skipping
+		need = DESIRED_FPS - FPS;
+		// iprintf("\x1b[19;0HFPS: %d     \n",FPS);
+		// iprintf("Need: %d    ",need);
 
-	for (i=0;i<need-1;i++) {
-		PicoSkipFrame = 1;
-		DoFrame(); // Frame skip if needed
-		// if(PsndOut)
-		//		playSound(&picosound);
-	}
+		if(need <= 0) {
+			return;
+		}
+
+		if (need>MAX_FRAMESKIP) need=MAX_FRAMESKIP; // Limit frame skipping
+
+		for (int i=0;i<need-1;i++) {
+			PicoSkipFrame = 1;
+			DoFrame(); // Frame skip if needed
+			// if(PsndOut)
+			//		playSound(&picosound);
+		}
+	//}
 	PicoSkipFrame = 0;
 	
 	DrawFrame();
@@ -1021,7 +1040,7 @@ int EmulateInit()
 
 	cx = 32;
 	cy = 16;
-	if(scalemode == 2) {
+	if(scalemode == 1) {
 		REG_BG3X = cx << 8;
 		REG_BG3Y = cy << 8;
 	}
