@@ -17,6 +17,7 @@ void (*PicoPrepareCram)()=0;            // prepares PicoCramHigh for renderer to
 
 #include <assert.h>
 //#include <nds/jtypes.h>
+#include <nds/dma.h>
 #ifndef __GNUC__
 #pragma warning (disable:4706) // Disable assignment within conditional
 #endif
@@ -483,18 +484,19 @@ static void DrawAllSpritesFull(int prio, int maxwidth)
 static void BackFillFull(int reg7)
 {
 	unsigned int back, i;
-	unsigned int *p=(unsigned int *)framebuff;
+	//unsigned int *p=(unsigned int *)framebuff;
 
 	// Start with a background color:
 	back=PicoCramHigh[reg7&0x3f];
 	back|=back<<16;
 
-	for(i = (8+320)*(8+(END_ROW-START_ROW)*8)/8; i; i--) {
+	/*for(i = (8+320)*(8+(END_ROW-START_ROW)*8)/8; i; i--) {
 		*p++ = back; // do 8 pixels per iteration
 		*p++ = back;
 		*p++ = back;
 		*p++ = back;
-	}
+	}*/
+	dmaFillWords(2, back, framebuff, (8+320)*(8+(END_ROW-START_ROW)*8));
 }
 #endif
 
