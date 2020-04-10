@@ -483,7 +483,8 @@ static void DrawAllSpritesFull(int prio, int maxwidth)
 #ifndef _ASM_DRAW2_C
 static void BackFillFull(int reg7)
 {
-	unsigned int back, i;
+	unsigned int back;
+	//unsigned int back, i;
 	//unsigned int *p=(unsigned int *)framebuff;
 
 	// Start with a background color:
@@ -496,7 +497,7 @@ static void BackFillFull(int reg7)
 		*p++ = back;
 		*p++ = back;
 	}*/
-	dmaFillWords(back, framebuff, (8+320)*(8+(END_ROW-START_ROW)*8));
+	dmaFillWords(back, framebuff, (8+320)*(8+(END_ROW-START_ROW)*8)*2);
 }
 #endif
 
