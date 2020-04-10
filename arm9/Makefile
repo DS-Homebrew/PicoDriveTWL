@@ -19,7 +19,7 @@ include $(DEVKITARM)/ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	picodriveds
 BUILD		:=	build
-SOURCES		:=	source source/cyclone source/pico/sound source/pico
+SOURCES		:=	source source/cpu source/pico/sound source/pico
 INCLUDES	:=	include source
 DATA		:=
 

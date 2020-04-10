@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 
-#include "pico/PicoInt.h"
+#include "pico/pico_int.h"
 #include "file.h"
 #include "file_browse.h"
 
@@ -45,7 +45,7 @@ static bool UsingAppendedRom = false;
 // GBAROM as writable memory
 static bool UsingExtendedMemory = false;
 
-FILE *romfile;
+const char *carthw_cfg_fname = "/_nds/PicoDriveDS/carthw.cfg";
 
 int choosingfile = 1;
 
@@ -358,7 +358,7 @@ int saveLoadGame(int load, int sram)
 		return res;
 	}
 	else { // We're dealing with a save state
-		struct Cyclone *cpustate = &PicoCpu;
+		struct Cyclone *cpustate = &PicoCpuCM68k;
 		struct Pico *emustate = &Pico;
 		if(load) { // load save state
 			PmovFile = fopen(saveFname, "rb");
@@ -596,7 +596,7 @@ static int DoFrame()
 		choosingfile = 2;
 	}
 
-	PicoPad[0]=pad;
+	Pico.m.pad[0]=pad;
 
 	PicoFrame();
 
@@ -892,9 +892,7 @@ int FileChoose()
 
 	std::string filename = browseForFile(extensionList);
 
-	romfile=fopen(filename.c_str(), "rb");
-
-	if(strcmp(filename.c_str(), "NULL") == 0 || romfile == NULL) {
+	if(strcmp(filename.c_str(), "NULL") == 0) {
 		return 0; // we didn't get a file
 	}
 	else {
@@ -907,13 +905,13 @@ int EmulateExit()
 {
 	if(!UsingAppendedRom && FileChoose()) {
 		// Save SRAM
-		if(Pico.m.sram_changed) {
+		/*if(Pico.m.sram_changed) {
 			saveLoadGame(0,1);
 			Pico.m.sram_changed = 0;
-		}
+		}*/
 
 		// Remove cartridge
-		PicoCartInsert(NULL,0);
+		PicoCartInsert(NULL,0,NULL);
 		if (RomData && !UsingAppendedRom && !UsingExtendedMemory) {
 			free(RomData); RomData=NULL; RomSize=0;
 		}
@@ -950,12 +948,13 @@ void LoadROMToMemory(uint16* location, int size)
 int EmulateInit()
 {
 	int i;
+	pm_file *rom = pm_open(rom_fname);
 	PicoInit();
 
 	// romfile=fopen("/SONIC.BIN","rb");
 
 	if(UsingAppendedRom) {
-		PicoCartInsert(RomData,RomSize);
+		PicoCartInsert(RomData,RomSize,carthw_cfg_fname);
 #ifdef ARM9_SOUND
 		InitSound();
 #endif
@@ -1006,7 +1005,7 @@ int EmulateInit()
 			fclose(romfile);
 			iprintf("Loaded.\n");
 
-			PicoCartInsert(RomData,RomSize);
+			PicoCartInsert(RomData,RomSize,carthw_cfg_fname);
 #ifdef ARM9_SOUND
 			InitSound();
 #endif
