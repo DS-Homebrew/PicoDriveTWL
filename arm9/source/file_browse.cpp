@@ -214,7 +214,7 @@ string browseForFile (const vector<string>& extensionList) {
 			showDirectoryContents (dirContents, screenOffset);
 		}
 
-		if (pressed & KEY_START) {
+		if (pressed & KEY_SELECT) {
 			return "NULL";
 		}
 	}
