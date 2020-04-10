@@ -496,7 +496,7 @@ static void BackFillFull(int reg7)
 		*p++ = back;
 		*p++ = back;
 	}*/
-	dmaFillWords(2, back, framebuff, (8+320)*(8+(END_ROW-START_ROW)*8));
+	dmaFillWords(back, framebuff, (8+320)*(8+(END_ROW-START_ROW)*8));
 }
 #endif
 
