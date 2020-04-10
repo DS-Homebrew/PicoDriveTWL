@@ -409,7 +409,9 @@ void ChangeScaleMode()
 	int xPos = 0;
 	if (width256) {
 		xSize = 256;
+		#ifdef SW_SCAN_RENDERER
 		xPos = 32;
+		#endif
 	}
 	switch(scalemode) {
 	case 0: // aspect
