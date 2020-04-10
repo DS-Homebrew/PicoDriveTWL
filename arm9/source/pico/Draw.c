@@ -7,6 +7,7 @@
 // For commercial use, separate licencing terms must be obtained.
 
 
+#include <nds/dma.h>
 #include "PicoInt.h"
 #ifndef __GNUC__
 #pragma warning (disable:4706) // Disable assignment within conditional
@@ -480,16 +481,18 @@ static void DrawSpritesFromCache(int *hc)
 static void BackFill(int reg7)
 {
   unsigned int back=0;
-  unsigned int *pd=NULL,*end=NULL;
+  unsigned int *pd=NULL;
+  //unsigned int *pd=NULL,*end=NULL;
 
   // Start with a blank scanline (background colour):
   back=PicoCramHigh[reg7&0x3f];
   back|=back<<16;
 
   pd= (unsigned int *)(HighCol+32);
-  end=(unsigned int *)(HighCol+32+320);
+  //end=(unsigned int *)(HighCol+32+320);
 
-  do { pd[0]=pd[1]=pd[2]=pd[3]=back; pd+=4; } while (pd<end);
+  //do { pd[0]=pd[1]=pd[2]=pd[3]=back; pd+=4; } while (pd<end);
+  dmaFillWords(back, pd, 320*2);
 }
 #endif
 

@@ -94,7 +94,7 @@ static int PicoAreaScan(int action,unsigned int ver)
 {
   unsigned char cpu[0x60];
   unsigned char cpu_z80[0x60];
-  int ret;
+  //int ret;
 
   memset(&cpu,0,sizeof(cpu));
   memset(&cpu_z80,0,sizeof(cpu_z80));
