@@ -1178,8 +1178,8 @@ int main(void)
 #endif
 
 #ifdef NDS_FRAME_RENDERER
-	BG0_CR = BG_64x64 | BG_TILE_BASE(4) | BG_MAP_BASE(0) | BG_COLOR_256;
-	REG_BG3CNT = ROTBG_SIZE_512x512 | BG_TILE_BASE(4) | BG_MAP_BASE(0);
+	REG_BG0CNT = BG_64x64 | BG_TILE_BASE(4) | BG_MAP_BASE(0) | BG_COLOR_256;
+	REG_BG3CNT = BgSize_R_512x512 | BG_TILE_BASE(4) | BG_MAP_BASE(0);
 	
 	uint16 val;
 	for(val = 0; val < 256; val++) {
