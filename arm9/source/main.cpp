@@ -387,7 +387,7 @@ bool sVibrate = false;
 void dosVibrate()
 {
 	s16 c = cosLerp(0) >> 4;
-	int xSize = 316;
+	int xSize = 316+sVibrate;
 	if (width256) {
 		xSize = 256;
 	}
@@ -400,6 +400,7 @@ void dosVibrate()
 	default:
 		break;
 	}
+	sVibrate = !sVibrate;
 }
 
 void ChangeScaleMode()
@@ -586,20 +587,13 @@ static int DoFrame()
 		}
 	}
 	
-	width256 = (((Pico.video.reg[12] & 1) == 0) /*&& !(PicoIn.AHW & PAHW_SMS)*/);
-	if (currentWidth != width256) {
-		if (scalemode != 1) ChangeScaleMode();
-		currentWidth = width256;
-	} else {
-		dosVibrate();
-	}
-
 	if (kd & KEY_SELECT) {
 		choosingfile = 2;
 	}
 
 	PicoPad[0]=pad;
 
+	width256 = (((Pico.video.reg[12] & 1) == 0) /*&& !(PicoIn.AHW & PAHW_SMS)*/);
 	PicoFrame();
 
 #ifdef ARM9_SOUND
@@ -722,8 +716,6 @@ static int DrawFrame()
 #ifdef SW_SCAN_RENDERER
 	PicoScan=NULL;
 #endif
-	
-	sVibrate = !sVibrate;
 
 	pdFrameCount++;
 	return 0;
@@ -792,6 +784,14 @@ void processvblank()
 			FPS = (60/dsFrameCount)*pdFrameCount;
 		}
 		//  EmulateFrame();
+		dosVibrate();
+	} else {
+		if (currentWidth != width256) {
+			if (scalemode != 1) ChangeScaleMode();
+			currentWidth = width256;
+		} else {
+			dosVibrate();
+		}
 	}
 }
 
@@ -1038,14 +1038,16 @@ int EmulateInit()
 	// iprintf(VERSION_NO);
 	iprintf("\n");
 
-	choosingfile = 0;
-
 	cx = 32;
 	cy = 16;
 	if(scalemode == 1) {
 		REG_BG3X = cx << 8;
 		REG_BG3Y = cy << 8;
+	} else {
+		REG_BG3Y = (-6) << 8;
 	}
+
+	choosingfile = 0;
 
 	return 0;
 }
