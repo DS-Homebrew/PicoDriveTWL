@@ -8,6 +8,8 @@
 *.arm7
 *.arm9
 *.DS_Store
+*.exe
+*.dll
 
 # Build Directory
 build/
