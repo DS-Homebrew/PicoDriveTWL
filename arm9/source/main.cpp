@@ -743,12 +743,12 @@ void EmulateFrame()
 
 	// iprintf("\x1b[19;0HFPS: %d     \n",FPS);
 
-	for (int i=0;i<=frameCountForFrameSkip;i++) {
+	//for (int i=0;i<=frameCountForFrameSkip;i++) {
 		PicoSkipFrame = 1;
 		DoFrame(); // Frame skip if needed
 		// if(PsndOut)
 		//		playSound(&picosound);
-	}
+	//}
 	PicoSkipFrame = 0;
 
 	DrawFrame();
@@ -867,8 +867,8 @@ void LidHandler() {
 void InitInterruptHandler()
 {
 	//irqInit();
-	irqSet(IRQ_VCOUNT, processvcount);
-	irqEnable(IRQ_VCOUNT);
+	//irqSet(IRQ_VCOUNT, processvcount);
+	//irqEnable(IRQ_VCOUNT);
 	irqSet(IRQ_VBLANK, processvblank);
 	irqEnable(IRQ_VBLANK);
 	// irqSet(IRQ_LID, LidHandler);

@@ -9,6 +9,7 @@
 
 #include "PicoInt.h"
 #include "sound/sound.h"
+#include "dsp.h"
 
 #include "Timer.h"
 #ifdef PROFILE
@@ -26,10 +27,6 @@
 #define VIDEO_OPT 0
 #else
 #define VIDEO_OPT 0x10
-#endif
-
-#ifdef SW_SCAN_RENDERER
-void PicoFrameFull() {}
 #endif
 
 int PicoVer=0x0080;
@@ -277,7 +274,9 @@ static int PicoFrameHints()
 #endif
 
     // even if we are in PAL mode, we draw 224 lines only (although we sould do 240 in some cases)
-    if(y>=0 && !PicoSkipFrame && !(PicoOpt&0x10)) PicoLine(y);
+    //if(y>=0 && !PicoSkipFrame && !(PicoOpt&0x10)) PicoLine(y);
+	while(dsp_receiveData(0) == 0x4452);
+	dsp_sendData(0, 0x4452);
 
 	hint--;
   }
@@ -408,13 +407,16 @@ static int PicoFrameSimple()
   }
   // EndProfile("Emulation");
 
+	while(dsp_receiveData(0) == 0x4452);
+	dsp_sendData(0, 0x4452);
+
   // BeginProfile();
-  if(!PicoSkipFrame) {
+  /*if(!PicoSkipFrame) {
     if(!(PicoOpt&0x10))
       // Draw the screen
       for (y=0;y<224;y++) PicoLine(y);
     else PicoFrameFull();
-  }
+  }*/
   // EndProfile("PicoFrameFull");
 
   return 0;
@@ -439,9 +441,11 @@ int PicoFrame()
   if(PsndOut) memset(PsndOut, 0, (PicoOpt & 8) ? (PsndLen<<2) : (PsndLen<<1));
 #endif
 
-  if(hints)
+  /*if(hints)
        PicoFrameHints();
-  else PicoFrameSimple();
+  else PicoFrameSimple();*/
+	while(dsp_receiveData(0) == 0x4452);
+	dsp_sendData(0, 0x4452);
 
 #ifdef ARM9_SOUND
   if(PsndOut) sound_render();
