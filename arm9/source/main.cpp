@@ -1142,9 +1142,8 @@ void FindAppendedRom(void)
 	}
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
-
 	defaultExceptionHandler();
 
 	bool fatInited = fatInitDefault();
@@ -1256,8 +1255,9 @@ int main(void)
 	if(fatInited) {
 		iprintf("\x1b[2J");
 
-		chdir("/");
-		if (!FileChoose()) {
+		if (argc > 1) {
+			sprintf(fileName, "%s", argv[1]);
+		} else if (!FileChoose()) {
 			consoleClear();
 			return 1;
 		}
