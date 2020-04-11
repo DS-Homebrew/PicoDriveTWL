@@ -11,15 +11,9 @@ WSLENV ?= notwsl
 
 BASEPATH := $(TEAK_LLVM)
 
-ifeq ($(OS),Windows_NT)
-CLANG	:= "$(BASEPATH)/clang.exe"
-MC  	:= "$(BASEPATH)/llvm-mc.exe"
-LD		:= "$(BASEPATH)/ld.lld.exe"
-else
 CLANG	:= $(BASEPATH)/clang
 MC  	:= $(BASEPATH)/llvm-mc
 LD		:= $(BASEPATH)/ld.lld
-endif
 ELF2DSP1:= "$(BASEPATH)/Elf2Dsp1.exe"
 
 # TARGET	:=	$(shell basename $(CURDIR))

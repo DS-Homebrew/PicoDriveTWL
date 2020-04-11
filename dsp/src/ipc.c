@@ -41,7 +41,6 @@ void onIpcCommandReceived(void)
     const ipc_cmd_t* ipcCmd = &gIpcFifo.fifo[gIpcFifo.readPtr];
     u32 cmd = ipcCmd->cmdLo | (ipcCmd->cmdHi << 16);
     u32 arg = ipcCmd->argLo | (ipcCmd->argHi << 16);
-    gbaa_handleCommand(cmd, arg);
 
     gIpcFifo.readPtr = (gIpcFifo.readPtr + 1) % IPC_FIFO_LENGTH;
     
