@@ -125,7 +125,7 @@ static bool initDsp()
 	twr_setBlockMapping(TWR_WRAM_BLOCK_B, TWR_WRAM_BASE, 0, TWR_WRAM_BLOCK_IMAGE_SIZE_32K);
 	twr_setBlockMapping(TWR_WRAM_BLOCK_C, TWR_WRAM_BASE, 0, TWR_WRAM_BLOCK_IMAGE_SIZE_32K);
 	//enable dsp irqs
-	*(vu32*)0x04000210 |= 1 << 24;
+	//*(vu32*)0x04000210 |= 1 << 24;
 	return true;
 }
 
