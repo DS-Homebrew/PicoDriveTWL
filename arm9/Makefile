@@ -22,6 +22,7 @@ BUILD		:=	build
 SOURCES		:=	source source/cyclone source/pico/sound source/pico
 INCLUDES	:=	include source
 DATA		:=
+GRAPHICS	:=  ../gfx
 
 #---------------------------------------------------------------------------------
 # options for code generation

@@ -1144,6 +1144,9 @@ void FindAppendedRom(void)
 
 int main(int argc, char **argv)
 {
+	extern void dsiOnly(void);
+	dsiOnly();
+
 	defaultExceptionHandler();
 
 	bool fatInited = fatInitDefault();
