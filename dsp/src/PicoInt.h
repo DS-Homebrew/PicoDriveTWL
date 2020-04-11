@@ -11,6 +11,7 @@
 //#include <stdlib.h>
 //#include <string.h>
 //#include "Pico.h"
+#include "teak/teak.h"
 
 
 // main oscillator clock which controls timing
@@ -20,11 +21,11 @@
 struct PicoVideo
 {
   unsigned char reg[0x20];
-  unsigned int command; // 32-bit Command
+  u32 command; // 32-bit Command
   unsigned char pending; // 1 if waiting for second half of 32-bit command
   unsigned char type; // Command type (v/c/vsram read/write)
   unsigned short addr; // Read/Write address
-  int status; // Status bits
+  s32 status; // Status bits
   unsigned char pad[0x14];
 };
 
@@ -58,7 +59,7 @@ struct Pico
   unsigned short vsram[0x40];  // 0x22180
 
   unsigned char *rom;          // 0x22200
-  unsigned int romsize;        // 0x22204
+  u32 romsize;        // 0x22204
 
   struct PicoMisc m;
   struct PicoVideo video;
