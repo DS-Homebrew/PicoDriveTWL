@@ -23,7 +23,7 @@ VERSION	:=	$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
 # DATA is a list of directories containing binary files embedded using bin2o
 # GRAPHICS is a list of directories containing image files to be converted with grit
 #---------------------------------------------------------------------------------
-TARGET		:=	picodriveds
+TARGET		:=	PicoDriveDS
 BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data gfx_bin
@@ -119,7 +119,7 @@ endif
  
 export GAME_TITLE := $(TARGET)
 
-.PHONY: bootloader bootstub clean arm7/$(TARGET).elf arm9/$(TARGET).elf
+.PHONY: clean dsp/$(TARGET).cdc arm7/$(TARGET).elf arm9/$(TARGET).elf
 
 all: $(TARGET).nds
 	
@@ -141,11 +141,15 @@ $(TARGET).arm9: arm9/$(TARGET).elf
 	cp arm9/$(TARGET).elf $(TARGET).arm9.elf
 
 #---------------------------------------------------------------------------------
+dsp/$(TARGET).cdc:
+	@$(MAKE) -C dsp
+
+#---------------------------------------------------------------------------------
 arm7/$(TARGET).elf:
 	@$(MAKE) -C arm7
 	
 #---------------------------------------------------------------------------------
-arm9/$(TARGET).elf:
+arm9/$(TARGET).elf: dsp/$(TARGET).cdc
 	@$(MAKE) -C arm9
 
 #---------------------------------------------------------------------------------
@@ -154,6 +158,16 @@ arm9/$(TARGET).elf:
 	#@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 #---------------------------------------------------------------------------------
 clean:
+	@echo clean ...
+	@rm -fr data
+	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).nds
+	@rm -fr $(TARGET).arm7.elf
+	@rm -fr $(TARGET).arm9.elf
+	@$(MAKE) -C dsp clean
+	@$(MAKE) -C arm9 clean
+	@$(MAKE) -C arm7 clean
+
+clean_arm:
 	@echo clean ...
 	@rm -fr data
 	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).nds

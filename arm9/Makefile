@@ -15,14 +15,14 @@ include $(DEVKITARM)/ds_rules
 # INCLUDES is a list of directories containing extra header files
 # DATA is a list of directories containing binary files embedded using bin2o
 # GRAPHICS is a list of directories containing image files to be converted with grit
-# MAXMOD_SOUNDBANK contains a directory of music and sound effect files
 #---------------------------------------------------------------------------------
-TARGET		:=	picodriveds
+TARGET		:=	PicoDriveDS
 BUILD		:=	build
-SOURCES		:=	source source/cyclone source/pico/sound source/pico
+SOURCES		:=	source source/dsp source/cyclone source/pico/sound source/pico
 INCLUDES	:=	include source
 DATA		:=
-GRAPHICS	:=  ../gfx
+DSPBINS		:= ../dsp
+GRAPHICS	:= ../gfx
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -63,6 +63,7 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir)) \
+					$(foreach dir,$(DSPBINS),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
@@ -73,6 +74,7 @@ BMPFILES	:=	$(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.bmp)))
 PNGFILES	:=	$(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.png)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+CDCFILES	:=	$(foreach dir,$(DSPBINS),$(notdir $(wildcard $(dir)/*.cdc)))
  
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -89,6 +91,7 @@ endif
 #---------------------------------------------------------------------------------
 
 export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
+					$(addsuffix .o,$(CDCFILES)) \
 					$(BMPFILES:.bmp=.o) \
 					$(PNGFILES:.png=.o) \
 					$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
@@ -125,6 +128,15 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 $(OUTPUT).elf	:	$(OFILES)
  
+#---------------------------------------------------------------------------------
+# you need a rule like this for each extension you use as binary data 
+#---------------------------------------------------------------------------------
+
+%.cdc.o : %.cdc
+	@echo $(notdir $<)
+	@$(bin2o)
+	arm-none-eabi-objcopy --rename-section .rodata=.text $(@)
+
 #---------------------------------------------------------------------------------
 %.bin.o	:	%.bin
 #---------------------------------------------------------------------------------

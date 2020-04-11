@@ -25,6 +25,7 @@ ELF2DSP1:= "$(BASEPATH)/Elf2Dsp1.exe"
 # DATA is a list of directories containing binary files
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
+TARGET		:=	PicoDriveDS
 BUILD		:=	build
 SOURCES		:=	src src/teak src/dmg
 INCLUDES	:=	include

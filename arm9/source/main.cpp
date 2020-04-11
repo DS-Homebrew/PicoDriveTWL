@@ -13,6 +13,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include "dsp/dsp.h"
+#include "dsp/DspProcess.h"
+#include "dsp/twlwram.h"
+#include "scfg.h"
+#include "PicoDriveDS_cdc.h"
 
 #include "pico/PicoInt.h"
 #include "file.h"
@@ -104,6 +109,24 @@ void PrintRegion()
 			iprintf("Unknown\n");
 			break;
 	}
+}
+
+static bool initDsp()
+{
+	REG_SCFG_EXT |= SCFG_EXT_ENABLE_DSP | SCFG_EXT_EXT_IRQ;
+	twr_setBlockMapping(TWR_WRAM_BLOCK_A, TWR_WRAM_BASE, 0, TWR_WRAM_BLOCK_IMAGE_SIZE_32K);
+	//map nwram
+	twr_setBlockMapping(TWR_WRAM_BLOCK_B, 0x03800000, 256 * 1024, TWR_WRAM_BLOCK_IMAGE_SIZE_256K);
+	twr_setBlockMapping(TWR_WRAM_BLOCK_C, 0x03C00000, 256 * 1024, TWR_WRAM_BLOCK_IMAGE_SIZE_256K);
+	DspProcess dspProc = DspProcess();
+	if(!dspProc.ExecuteDsp1((const dsp_dsp1_t*)PicoDriveDS_cdc))
+		return false;
+	//remove nwram from the memory map
+	twr_setBlockMapping(TWR_WRAM_BLOCK_B, TWR_WRAM_BASE, 0, TWR_WRAM_BLOCK_IMAGE_SIZE_32K);
+	twr_setBlockMapping(TWR_WRAM_BLOCK_C, TWR_WRAM_BASE, 0, TWR_WRAM_BLOCK_IMAGE_SIZE_32K);
+	//enable dsp irqs
+	*(vu32*)0x04000210 |= 1 << 24;
+	return true;
 }
 
 #ifdef ARM9_SOUND
@@ -1238,6 +1261,8 @@ int main(int argc, char **argv)
 	// consoleInitDefault((u16*)SCREEN_BASE_BLOCK_SUB(31), (u16*)CHAR_BASE_BLOCK_SUB(0), 16);
 	consoleDemoInit();
 
+	initDsp();
+
 	// lcdSwap();
 
 	// SoundInit();
@@ -1251,7 +1276,7 @@ int main(int argc, char **argv)
 	PsndRate = 11025;
 #endif
 	
-	iprintf("\nTrying to init FAT...\n");
+	//iprintf("\nTrying to init FAT...\n");
 	
 
 
