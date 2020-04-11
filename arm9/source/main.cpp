@@ -407,18 +407,18 @@ void ChangeScaleMode()
 {
 	s16 c = cosLerp(0) >> 4;
 	int xSize = 316;
-	int xPos = 0;
+	//int xPos = 0;
 	if (width256) {
 		xSize = 256;
-		#ifdef SW_SCAN_RENDERER
-		xPos = 32;
-		#endif
+		//#ifdef SW_SCAN_RENDERER
+		//xPos = 32;
+		//#endif
 	}
 	switch(scalemode) {
 	case 0: // aspect
 		REG_BG3PA = ( c * (xSize))>>8;
 		REG_BG3PD = ( c * (316+sVibrate))>>8;
-		REG_BG3X  = xPos << 8;
+		REG_BG3X  = 0;
 		REG_BG3Y  = (-6) << 8;
 		break;
 	case 1: // 1:1
