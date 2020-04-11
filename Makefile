@@ -27,6 +27,7 @@ TARGET		:=	PicoDriveDS
 BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data gfx_bin
+NITRODATA	:=	nitrofiles
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -131,7 +132,7 @@ dist:	all
 	@tar -cvjf $(TARGET)-$(VERSION).tar.bz2 hbmenu testfiles README.html COPYING hbmenu -X exclude.lst
 	
 $(TARGET).nds:	$(TARGET).arm7 $(TARGET).arm9
-	ndstool	-u 00030004 -g EPDA -c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf \
+	ndstool	-u 00030004 -g EPDA -c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf -d $(NITRODATA) \
   -b genesis-32x32.bmp "PicoDriveDS;Version $(VERSION);by Ryan FB"
 
 $(TARGET).arm7: arm7/$(TARGET).elf

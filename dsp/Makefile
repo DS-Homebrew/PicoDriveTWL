@@ -65,7 +65,7 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
  
 export ELFPATH	:=	$(CURDIR)/$(TARGET).elf
-export DSP1PATH	:=	$(CURDIR)/$(TARGET).cdc
+export DSP1PATH	:=	$(CURDIR)/../nitrofiles/$(TARGET).cdc
 export DEPSDIR := $(CURDIR)/$(BUILD)
 
 ifneq ($(OS),Windows_NT)

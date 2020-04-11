@@ -79,8 +79,6 @@ enum DspPcfgMemsel
 #define REG_DSP_CMD2            (*(vu16*)0x4004330)
 #define REG_DSP_REP2            (*(vu16*)0x4004334)
 
-extern "C" void dsp_spinWait();
-
 void dsp_setBlockReset(bool reset);
 void dsp_setClockEnabled(bool enabled);
 void dsp_resetInterface();
@@ -110,6 +108,6 @@ static inline void dsp_clearSemaphore(u16 mask)
 
 static inline u16 dsp_getSemaphore()
 {
-    dsp_spinWait();
+    swiDelay(8);
     return REG_DSP_SEM;
 }
