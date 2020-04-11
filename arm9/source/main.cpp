@@ -895,6 +895,7 @@ int FileChoose()
 	extensionList.emplace_back(".bin");
 	extensionList.emplace_back(".gen");
 	extensionList.emplace_back(".smd");
+	extensionList.emplace_back(".md");
 
 	std::string filename = browseForFile(extensionList);
 
