@@ -52,6 +52,7 @@ int choosingfile = 1;
 u32 dsFrameCount = 0;
 u32 pdFrameCount = 0;
 u32 FPS = 0;
+int frameCountForFrameSkip = 0;
 
 u32 xdxval = 320;
 u32 ydyval = 300;
@@ -717,6 +718,8 @@ static int DrawFrame()
 	PicoScan=NULL;
 #endif
 
+	frameCountForFrameSkip -= 2;
+	if (frameCountForFrameSkip < 0) frameCountForFrameSkip = 0;
 	pdFrameCount++;
 	return 0;
 }
@@ -733,40 +736,39 @@ void EmulateFrame()
 	if(DEBUG)
 		iprintf("HIT EMULATEFRAME\n");
 
-	//if (!isDSiMode()) {
-		int need=0;
-		// int time=0,frame=0;
+	// iprintf("\x1b[19;0HFPS: %d     \n",FPS);
 
-		need = DESIRED_FPS - FPS;
-		// iprintf("\x1b[19;0HFPS: %d     \n",FPS);
-		// iprintf("Need: %d    ",need);
-
-		if(need <= 0) {
-			return;
-		}
-
-		if (need>MAX_FRAMESKIP) need=MAX_FRAMESKIP; // Limit frame skipping
-
-		for (int i=0;i<need-1;i++) {
-			PicoSkipFrame = 1;
-			DoFrame(); // Frame skip if needed
-			// if(PsndOut)
-			//		playSound(&picosound);
-		}
-	//}
+	for (int i=0;i<=frameCountForFrameSkip;i++) {
+		PicoSkipFrame = 1;
+		DoFrame(); // Frame skip if needed
+		// if(PsndOut)
+		//		playSound(&picosound);
+	}
 	PicoSkipFrame = 0;
-	
+
 	DrawFrame();
-	
+
 	if(DEBUG)
 		iprintf("LEAVING EMULATEFRAME\n");
-	
+
 	return;
 }
 
 void processtimer()
 {
 	// CurrentTimeInms+=10;
+}
+
+void processvcount()
+{
+	if(!choosingfile) {
+		frameCountForFrameSkip++;
+		if (frameCountForFrameSkip > MAX_FRAMESKIP) {
+			frameCountForFrameSkip = 0;
+		}
+	} else {
+		frameCountForFrameSkip = 0;
+	}
 }
 
 void processvblank()
@@ -860,6 +862,8 @@ void LidHandler() {
 void InitInterruptHandler()
 {
 	//irqInit();
+	irqSet(IRQ_VCOUNT, processvcount);
+	irqEnable(IRQ_VCOUNT);
 	irqSet(IRQ_VBLANK, processvblank);
 	irqEnable(IRQ_VBLANK);
 	// irqSet(IRQ_LID, LidHandler);
