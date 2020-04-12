@@ -312,7 +312,7 @@ static int UpdatePalette()
   int c=0;
 
   // Update palette:
-  for (c=0;c<64;c++) (BG_PALETTE)[c]=(unsigned short)PicoCram(Pico.cram[c]);
+  for (c=0;c<64;c++) BG_PALETTE[c]=(unsigned short)PicoCram(Pico.cram[c]);
   Pico.m.dirtyPal=0;
 
   return 0;

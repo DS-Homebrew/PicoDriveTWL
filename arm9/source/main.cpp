@@ -1159,7 +1159,11 @@ int main(int argc, char **argv)
 	// videoSetMode(MODE_FB0);
 	// vramSetBankA(VRAM_A_LCD);
 
+	#ifdef HW_FRAME_RENDERER
+	videoSetMode(MODE_5_2D | DISPLAY_BG0_ACTIVE | DISPLAY_BG3_ACTIVE);
+	#else
 	videoSetMode(MODE_5_2D | DISPLAY_BG3_ACTIVE);
+	#endif
 
 	// Set up the sub screen
 	videoSetModeSub(MODE_5_2D | DISPLAY_BG0_ACTIVE);
@@ -1181,13 +1185,13 @@ int main(int argc, char **argv)
 	PicoCramHigh = cram_high;
 #endif
 
-#ifdef NDS_FRAME_RENDERER
+#ifdef HW_FRAME_RENDERER
 	REG_BG0CNT = BG_64x64 | BG_TILE_BASE(4) | BG_MAP_BASE(0) | BG_COLOR_256;
 	REG_BG3CNT = BgSize_R_512x512 | BG_TILE_BASE(4) | BG_MAP_BASE(0);
 	
 	uint16 val;
 	for(val = 0; val < 256; val++) {
-		(BG_PALETTE)[val] = RGB15(val%31,val%31,val%31);
+		BG_PALETTE[val] = RGB15(val%31,val%31,val%31);
 	}
 	
 	for(val = 0; val < (64*64); val++) {
