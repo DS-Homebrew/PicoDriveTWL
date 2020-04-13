@@ -1,6 +1,7 @@
 #include <nds.h>
 #include <stdio.h>
 #include "pico/PicoInt.h"
+#include "tonccpy.h"
 
 char fileName[256];
 
@@ -9,6 +10,11 @@ void loadRomBank(int page, int i) {
 	extern bool UsingExtendedMemory;
 
 	if(!UsingExtendedMemory) return;
+
+	if (page == 0) {
+		tonccpy(Pico.rom+0x80000+(i*0x80000), Pico.rom, 0x80000);	// Read first-loaded bytes
+		return;
+	}
 
 	romfile = fopen(fileName, "rb");
 
