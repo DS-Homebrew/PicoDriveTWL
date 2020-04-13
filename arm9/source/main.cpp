@@ -43,7 +43,7 @@ static unsigned int RomSize=0;
 static bool UsingAppendedRom = false;
 // separate from UsingAppendedRom, we need to track if we're using
 // GBAROM as writable memory
-static bool UsingExtendedMemory = false;
+bool UsingExtendedMemory = false;
 
 FILE *romfile;
 
@@ -905,7 +905,9 @@ int FileChoose()
 		return 0; // we didn't get a file
 	}
 	else {
-		sprintf(fileName, "%s", filename.c_str());
+		char path[256];
+		getcwd(path, 256);
+		sprintf(fileName, "%s%s", path, filename.c_str());
 		return 1; // we got a file
 	}
 }
@@ -941,7 +943,7 @@ void LoadROMToMemory(uint16* location, int size)
 	size=(size+3)&~3; // Round up to a multiple of 4
 	
 	fseek(romfile,0,SEEK_SET);
-	fread(location,1,size,romfile);
+	fread(location,1,0x400000,romfile);
 	fclose(romfile);
 	
 	// Check for SMD:

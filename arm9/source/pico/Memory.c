@@ -191,6 +191,8 @@ end:
 
 static void OtherWrite8(u32 a,u32 d)
 {
+	extern void loadRomBank(int page, int i);
+
   if (a==0xc00011||a==0xa07F11){ 
 #ifdef ARM9_SOUND
 	  if(PicoOpt&2) SN76496Write(d); 
@@ -249,6 +251,62 @@ static void OtherWrite8(u32 a,u32 d)
   // sram access register
   if(a == 0xA130F1) {
     Pico.m.sram_reg = (u8)d;
+	return;
+  }
+  // SSF2 mapper (0x080000-0x0FFFFF)
+  if(a == 0xA130F3) {
+	if (Pico.m.romBank[0] != d) {
+		loadRomBank(d, 0);
+		Pico.m.romBank[0] = d;
+	}
+	return;
+  }
+  // SSF2 mapper (0x100000-0x17FFFF)
+  if(a == 0xA130F5) {
+	if (Pico.m.romBank[1] != d) {
+		loadRomBank(d, 1);
+		Pico.m.romBank[1] = d;
+	}
+	return;
+  }
+  // SSF2 mapper (0x180000-0x1FFFFF)
+  if(a == 0xA130F7) {
+	if (Pico.m.romBank[2] != d) {
+		loadRomBank(d, 2);
+		Pico.m.romBank[2] = d;
+	}
+	return;
+  }
+  // SSF2 mapper (0x200000-0x27FFFF)
+  if(a == 0xA130F9) {
+	if (Pico.m.romBank[3] != d) {
+		loadRomBank(d, 3);
+		Pico.m.romBank[3] = d;
+	}
+	return;
+  }
+  // SSF2 mapper (0x280000-0x2FFFFF)
+  if(a == 0xA130FB) {
+	if (Pico.m.romBank[4] != d) {
+		loadRomBank(d, 4);
+		Pico.m.romBank[4] = d;
+	}
+	return;
+  }
+  // SSF2 mapper (0x300000-0x37FFFF)
+  if(a == 0xA130FD) {
+	if (Pico.m.romBank[5] != d) {
+		loadRomBank(d, 5);
+		Pico.m.romBank[5] = d;
+	}
+	return;
+  }
+  // SSF2 mapper (0x380000-0x3FFFFF)
+  if(a == 0xA130FF) {
+	if (Pico.m.romBank[6] != d) {
+		loadRomBank(d, 6);
+		Pico.m.romBank[6] = d;
+	}
 	return;
   }
 }

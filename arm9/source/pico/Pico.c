@@ -169,6 +169,10 @@ int PicoReset(int hard)
 
   // enable sram access by default if it doesn't overlap with ROM
   if(Pico.romsize <= SRam.start) Pico.m.sram_reg = 1;
+  
+  for (int i = 1; i <= 7; i++) {
+	Pico.m.romBank[i-1] = i;
+  }
 
   return 0;
 }
