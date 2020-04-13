@@ -173,6 +173,8 @@ int PicoReset(int hard)
   for (int i = 1; i <= 7; i++) {
 	Pico.m.romBank[i-1] = i;
   }
+  extern void initCachedPages(void);
+  initCachedPages();
 
   return 0;
 }
