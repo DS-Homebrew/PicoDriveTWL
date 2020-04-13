@@ -1,7 +1,6 @@
 #include <nds.h>
 #include <stdio.h>
 #include "pico/PicoInt.h"
-#include "tonccpy.h"
 
 #define cacheAmount 4
 
@@ -23,13 +22,15 @@ void loadRomBank(int page, int i) {
 	if(!UsingExtendedMemory) return;
 
 	if (page == 0) {
-		tonccpy(Pico.rom+0x80000+(i*0x80000), Pico.rom, 0x80000);	// Read first-loaded bytes
+		DC_FlushAll();
+		dmaCopyWords(0, Pico.rom, Pico.rom+0x80000+(i*0x80000), 0x80000);	// Read first-loaded bytes
 		return;
 	}
 
 	for (int i2 = 0; i2 < cacheAmount; i2++) {
 		if (cachedPages[i2] == page) {
-			tonccpy(Pico.rom+0x80000+(i*0x80000), Pico.rom+0x400000+(i2*0x80000), 0x80000);
+			DC_FlushAll();
+			dmaCopyWords(0, Pico.rom+0x400000+(i2*0x80000), Pico.rom+0x80000+(i*0x80000), 0x80000);
 			return;
 		}
 	}
@@ -52,7 +53,8 @@ void loadRomBank(int page, int i) {
 	} // Decode and byteswap SMD
 	else Byteswap((unsigned char*)bankCache,0x80000); // Just byteswap
 
-	tonccpy(Pico.rom+0x80000+(i*0x80000), bankCache, 0x80000);
+	DC_FlushAll();
+	dmaCopyWords(0, bankCache, Pico.rom+0x80000+(i*0x80000), 0x80000);
 	cachedPages[currentPage] = page;
 	currentPage++;
 	if (currentPage >= cacheAmount) currentPage = 0;
