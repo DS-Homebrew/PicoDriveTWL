@@ -1307,6 +1307,7 @@ int main(int argc, char **argv)
 	while(1) {
 		if(choosingfile) {
 			ConvertToGrayscale();
+			for (int i = 0; i < 30; i++) swiWaitForVBlank();
 			if(EmulateExit()) {
 				EmulateInit();
 			}
