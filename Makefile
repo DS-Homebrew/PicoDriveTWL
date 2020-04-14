@@ -9,8 +9,8 @@ endif
 
 include $(DEVKITARM)/ds_rules
 
-export VERSION_MAJOR	:= 1
-export VERSION_MINOR	:= 1
+export VERSION_MAJOR	:= 2
+export VERSION_MINOR	:= 0
 export VERSION_PATCH	:= 0
 
 
@@ -23,7 +23,7 @@ VERSION	:=	$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)
 # DATA is a list of directories containing binary files embedded using bin2o
 # GRAPHICS is a list of directories containing image files to be converted with grit
 #---------------------------------------------------------------------------------
-TARGET		:=	picodriveds
+TARGET		:=	PicoDriveTWL
 BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data gfx_bin
@@ -131,8 +131,9 @@ dist:	all
 	@tar -cvjf $(TARGET)-$(VERSION).tar.bz2 hbmenu testfiles README.html COPYING hbmenu -X exclude.lst
 	
 $(TARGET).nds:	$(TARGET).arm7 $(TARGET).arm9
-	ndstool	-u 00030004 -g EPDA -c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf \
-  -b genesis-32x32.bmp "PicoDriveDS;Version $(VERSION);by Ryan FB"
+	ndstool	-u 00030004 -g EPDA 00 "PICODRIVE" -c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf \
+  -b genesis-32x32.bmp "PicoDrive TWL;Version $(VERSION);Ryan FB, RocketRobz"
+	python27 fix_ndsheader.py $(CURDIR)/$(TARGET).nds
 
 $(TARGET).arm7: arm7/$(TARGET).elf
 	cp arm7/$(TARGET).elf $(TARGET).arm7.elf

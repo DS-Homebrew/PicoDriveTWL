@@ -17,7 +17,7 @@ include $(DEVKITARM)/ds_rules
 # GRAPHICS is a list of directories containing image files to be converted with grit
 # MAXMOD_SOUNDBANK contains a directory of music and sound effect files
 #---------------------------------------------------------------------------------
-TARGET		:=	picodriveds
+TARGET		:=	PicoDriveTWL
 BUILD		:=	build
 SOURCES		:=	source source/cyclone source/pico/sound source/pico
 INCLUDES	:=	include source
