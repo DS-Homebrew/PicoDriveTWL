@@ -1264,7 +1264,14 @@ int main(int argc, char **argv)
 		iprintf("\x1b[2J");
 
 		if (argc > 1) {
-			sprintf(fileName, "%s", argv[1]);
+			romfile=fopen(argv[1], "rb");
+
+			if(romfile == NULL) {
+				return 0; // we didn't get a file
+			}
+			else {
+				sprintf(fileName, argv[1]); // we got a file
+			}
 		} else if (!FileChoose()) {
 			consoleClear();
 			return 1;
