@@ -1,6 +1,7 @@
 #include <nds.h>
 #include <stdio.h>
 #include "pico/PicoInt.h"
+#include "tonccpy.h"
 
 #define cacheAmount 4
 
@@ -22,15 +23,24 @@ void loadRomBank(int page, int i) {
 	if(!UsingExtendedMemory) return;
 
 	if (page == 0) {
-		DC_FlushAll();
-		dmaCopyWords(0, Pico.rom, Pico.rom+0x80000+(i*0x80000), 0x80000);	// Read first-loaded bytes
+		// Read first-loaded bytes
+		if (isDSiMode()) {
+			DC_FlushAll();
+			dmaCopyWords(0, Pico.rom, Pico.rom+0x80000+(i*0x80000), 0x80000);
+		} else {
+			tonccpy(Pico.rom+0x80000+(i*0x80000), Pico.rom, 0x80000);
+		}
 		return;
 	}
 
 	for (int i2 = 0; i2 < cacheAmount; i2++) {
 		if (cachedPages[i2] == page) {
-			DC_FlushAll();
-			dmaCopyWords(0, Pico.rom+0x400000+(i2*0x80000), Pico.rom+0x80000+(i*0x80000), 0x80000);
+			if (isDSiMode()) {
+				DC_FlushAll();
+				dmaCopyWords(0, Pico.rom+0x400000+(i2*0x80000), Pico.rom+0x80000+(i*0x80000), 0x80000);
+			} else {
+				tonccpy(Pico.rom+0x80000+(i*0x80000), Pico.rom+0x400000+(i2*0x80000), 0x80000);
+			}
 			return;
 		}
 	}
@@ -53,8 +63,12 @@ void loadRomBank(int page, int i) {
 	} // Decode and byteswap SMD
 	else Byteswap((unsigned char*)bankCache,0x80000); // Just byteswap
 
-	DC_FlushAll();
-	dmaCopyWords(0, bankCache, Pico.rom+0x80000+(i*0x80000), 0x80000);
+	if (isDSiMode()) {
+		DC_FlushAll();
+		dmaCopyWords(0, bankCache, Pico.rom+0x80000+(i*0x80000), 0x80000);
+	} else {
+		tonccpy(Pico.rom+0x80000+(i*0x80000), bankCache, 0x80000);
+	}
 	cachedPages[currentPage] = page;
 	currentPage++;
 	if (currentPage >= cacheAmount) currentPage = 0;
