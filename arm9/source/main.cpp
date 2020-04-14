@@ -980,6 +980,7 @@ int EmulateInit()
 				UsingExtendedMemory = true;
 				LoadROMToMemory((uint16*)0x02800000,i);
 			} else if(i >= 0x280000) {
+				sysSetCartOwner(BUS_OWNER_ARM9);
 				struct stat st;
 				stat("/",&st);
 				if((st.st_dev == DEVICE_TYPE_SCSD) || (st.st_dev == DEVICE_TYPE_SCCF)) { // cart is SCSD/SCCF
