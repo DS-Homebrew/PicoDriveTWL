@@ -1042,7 +1042,7 @@ int EmulateInit()
 	// PrintRegion();
 	
 	// iprintf("\x1b[10;0H");
-	iprintf("\n\t\tPicoDriveDS ");
+	iprintf("\n\t\tPicoDriveTWL");
 	// iprintf(VERSION_NO);
 	iprintf("\n");
 
