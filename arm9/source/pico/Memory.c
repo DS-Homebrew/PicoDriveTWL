@@ -128,18 +128,23 @@ extern bool playSound;
 extern mm_sfxhand sndHandlers[48];
 static int prevSndId = 0;
 
+extern u8 sndFirstID;
+extern u8 sndLastID;
+
+extern u16 snd68000addr[2];
+
 static void SoundPlayRAM(void) {
 	if (!playSound) return;
 
 	int soundId = 0;
-	if (Pico.ram[0xF00A] >= 0xA0 && Pico.ram[0xF00A] <= 0xCF) {
-		soundId = Pico.ram[0xF00A];
-	} else if (Pico.ram[0xF00B] >= 0xA0 && Pico.ram[0xF00B] <= 0xCF) {
-		soundId = Pico.ram[0xF00B];
+	if (Pico.ram[snd68000addr[0]] >= sndFirstID && Pico.ram[snd68000addr[0]] <= sndLastID) {
+		soundId = Pico.ram[snd68000addr[0]];
+	} else if (Pico.ram[snd68000addr[1]] >= sndFirstID && Pico.ram[snd68000addr[1]] <= sndLastID) {
+		soundId = Pico.ram[snd68000addr[1]];
 	}
 	if (soundId==0) return;
 
-	soundId -= 0xA0;
+	soundId -= sndFirstID;
 
 	// External sound
 	if (sndHandlers[prevSndId] != NULL)

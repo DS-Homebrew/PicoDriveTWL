@@ -114,6 +114,11 @@ bool playSound = false;
 static mm_sound_effect snd[48];
 mm_sfxhand sndHandlers[48];
 
+u8 sndFirstID = 0;
+u8 sndLastID = 0;
+
+u16 snd68000addr[2] = {0};
+
 static void InitSound(const char* filename) {
 	if (!isDSiMode()) return;
 
@@ -134,6 +139,12 @@ static void InitSound(const char* filename) {
 
     CIniFile soundSettings(filePath[0]);
 	mmFilePath = soundSettings.GetString("SOUND", "Filename", "");	// Grab filename from .ini file
+
+	sndFirstID = soundSettings.GetInt("SOUND", "FirstID", 0);
+	sndLastID = soundSettings.GetInt("SOUND", "LastID", 0);
+
+	snd68000addr[0] = soundSettings.GetInt("SOUND", "68000addr1", 0);
+	snd68000addr[1] = soundSettings.GetInt("SOUND", "68000addr2", 0);
 
 	sprintf(filePath[1], "/_nds/PicoDriveTWL/%s", mmFilePath.c_str());
 
