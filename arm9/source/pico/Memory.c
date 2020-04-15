@@ -124,10 +124,13 @@ static int PadRead(int i)
   return value; // will mirror later
 }
 
+extern bool playSound;
 extern mm_sfxhand sndHandlers[48];
 static int prevSndId = 0;
 
 static void SoundPlayRAM(void) {
+	if (!playSound) return;
+
 	int soundId = 0;
 	if (Pico.ram[0xF00A] >= 0xA0 && Pico.ram[0xF00A] <= 0xCF) {
 		soundId = Pico.ram[0xF00A];

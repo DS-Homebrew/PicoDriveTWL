@@ -18,6 +18,7 @@
 #include "pico/PicoInt.h"
 #include "file.h"
 #include "file_browse.h"
+#include "iniFile.h"
 
 using namespace std;
 
@@ -107,14 +108,37 @@ void PrintRegion()
 	}
 }
 
+std::string mmFilePath;
+
+bool playSound = false;
 static mm_sound_effect snd[48];
 mm_sfxhand sndHandlers[48];
 
-static void InitSound() {
+static void InitSound(const char* filename) {
 	if (!isDSiMode()) return;
 
+	playSound = false;
+
+	char filePath[2][256];
+	sprintf(filePath[0], "/_nds/PicoDriveTWL/%s", filename);
+	for (int i = (int)sizeof(filePath[0]); i > 0; i--) {
+		if (filePath[0][i] == '.') {
+			// Replace filetype
+			filePath[0][i+1] = 'i';
+			filePath[0][i+2] = 'n';
+			filePath[0][i+3] = 'i';
+			filePath[0][i+4] = '\x00';
+			break;
+		}
+	}
+
+    CIniFile soundSettings(filePath[0]);
+	mmFilePath = soundSettings.GetString("SOUND", "Filename", "");	// Grab filename from .ini file
+
+	sprintf(filePath[1], "/_nds/PicoDriveTWL/%s", mmFilePath.c_str());
+
 	// Load sound bank into memory
-	FILE* soundBank = fopen("/_nds/PicoDriveTWL/sfx.bin", "rb");
+	FILE* soundBank = fopen(filePath[1], "rb");
 	if (!soundBank) return;
 	fread((void*)0x02500000, 1, 0x300000, soundBank);
 	fclose(soundBank);
@@ -132,6 +156,8 @@ static void InitSound() {
 			127,	// panning
 		};
 	}
+
+	playSound = true;
 }
 
 #ifdef ARM9_SOUND
@@ -936,6 +962,7 @@ int FileChoose()
 		char path[256];
 		getcwd(path, 256);
 		sprintf(fileName, "%s%s", path, filename.c_str());
+		InitSound(filename.c_str());
 		return 1; // we got a file
 	}
 }
@@ -1278,8 +1305,6 @@ int main(int argc, char **argv)
 
 	// iprintf("About to call InitFiles()...\n");
 
-
-	InitSound();
 
 #ifdef ARM9_SOUND
 	PsndRate = 11025;
