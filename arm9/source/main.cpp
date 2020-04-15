@@ -7,6 +7,7 @@
 #include <nds.h>
 #include <nds/bios.h>
 #include <nds/arm9/console.h>
+#include <maxmod9.h>
 #include <fat.h>
 #include <stdio.h>
 #include <sys/unistd.h>
@@ -54,12 +55,12 @@ u32 pdFrameCount = 0;
 u32 FPS = 0;
 int frameCountForFrameSkip = 0;
 
-u32 xdxval = 320;
-u32 ydyval = 300;
+//static u32 xdxval = 320;
+//static u32 ydyval = 300;
 
-short scalemode = 0;
-bool width256 = false;
-bool currentWidth = false;
+static short scalemode = 0;
+static bool width256 = false;
+static bool currentWidth = false;
 
 #if defined(SW_FRAME_RENDERER) || defined(SW_SCAN_RENDERER)
 static unsigned short cram_high[0x40];
@@ -103,6 +104,33 @@ void PrintRegion()
 		default:
 			iprintf("Unknown\n");
 			break;
+	}
+}
+
+static mm_sound_effect snd[48];
+mm_sfxhand sndHandlers[48];
+
+static void InitSound() {
+	if (!isDSiMode()) return;
+
+	// Load sound bank into memory
+	FILE* soundBank = fopen("/_nds/PicoDriveTWL/sfx.bin", "rb");
+	if (!soundBank) return;
+	fread((void*)0x02500000, 1, 0x300000, soundBank);
+	fclose(soundBank);
+
+	mmInitDefaultMem((mm_addr)0x02500000);
+
+	for (unsigned int i = 0; i < 47; i++) {
+		mmLoadEffect(i);
+
+		snd[i] = {
+			{i} ,			// id
+			(int)(1.0f * (1<<10)),	// rate
+			sndHandlers[i],		// handle
+			127,	// volume
+			127,	// panning
+		};
 	}
 }
 
@@ -382,10 +410,10 @@ int saveLoadGame(int load, int sram)
 	return 0;
 }
 
-int32 cx=32,cy=16;
-bool sVibrate = false;
+static int32 cx=32,cy=16;
+static bool sVibrate = false;
 
-void dosVibrate()
+static void dosVibrate()
 {
 	s16 c = cosLerp(0) >> 4;
 	int xSize = 316+sVibrate;
@@ -404,7 +432,7 @@ void dosVibrate()
 	sVibrate = !sVibrate;
 }
 
-void ChangeScaleMode()
+static void ChangeScaleMode()
 {
 	s16 c = cosLerp(0) >> 4;
 	int xSize = 316;
@@ -1151,7 +1179,6 @@ int main(int argc, char **argv)
 	defaultExceptionHandler();
 
 	bool fatInited = fatInitDefault();
-	soundEnable();
 
 	// ClearMemory();
 	//resetMemory2_ARM9();
@@ -1252,6 +1279,8 @@ int main(int argc, char **argv)
 	// iprintf("About to call InitFiles()...\n");
 
 
+	InitSound();
+
 #ifdef ARM9_SOUND
 	PsndRate = 11025;
 #endif
@@ -1316,6 +1345,7 @@ int main(int argc, char **argv)
 
 	while(1) {
 		if(choosingfile) {
+			mmEffectCancelAll();
 			ConvertToGrayscale();
 			for (int i = 0; i < 30; i++) swiWaitForVBlank();
 			if(EmulateExit()) {

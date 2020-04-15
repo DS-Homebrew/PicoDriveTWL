@@ -9,6 +9,7 @@
 
 //#define __debug_io
 
+#include <maxmod9.h>
 #include "PicoInt.h"
 
 #include "sound/ym2612.h"
@@ -121,6 +122,28 @@ static int PadRead(int i)
   value |= Pico.ioports[i+1]&Pico.ioports[i+4];
 
   return value; // will mirror later
+}
+
+extern mm_sfxhand sndHandlers[48];
+static int prevSndId = 0;
+
+static void SoundPlayRAM(void) {
+	int soundId = 0;
+	if (Pico.ram[0xF00A] >= 0xA0 && Pico.ram[0xF00A] <= 0xCF) {
+		soundId = Pico.ram[0xF00A];
+	} else if (Pico.ram[0xF00B] >= 0xA0 && Pico.ram[0xF00B] <= 0xCF) {
+		soundId = Pico.ram[0xF00B];
+	}
+	if (soundId==0) return;
+
+	soundId -= 0xA0;
+
+	// External sound
+	if (sndHandlers[prevSndId] != NULL)
+		mmEffectRelease( sndHandlers[prevSndId] );
+	sndHandlers[soundId] = mmEffect(soundId);
+	
+	prevSndId = soundId;
 }
 
 // notaz: address must already be checked
@@ -419,7 +442,12 @@ static void CPU_CALL PicoWrite8(u32 a,u8 d)
 #ifdef __debug_io
   dprintf("w8 : %06x,   %02x", a, d);
 #endif
-  if ((a&0xe00000)==0xe00000) { u8 *pm=(u8 *)(Pico.ram+((a^1)&0xffff)); pm[0]=d; return; } // Ram
+  if ((a&0xe00000)==0xe00000) {
+    u8 *pm=(u8 *)(Pico.ram+((a^1)&0xffff));
+    pm[0]=d;
+    SoundPlayRAM();
+    return;
+  } // Ram
 
   a&=0xffffff;
   OtherWrite8(a,d);
