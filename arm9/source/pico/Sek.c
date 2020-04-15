@@ -17,7 +17,7 @@ struct Cyclone PicoCpu;
 
 int SekInit()
 {
-  // CycloneInit();
+  CycloneInit();
   memset(&PicoCpu,0,sizeof(PicoCpu));
   return 0;
 }
@@ -27,12 +27,7 @@ int SekReset()
 {
   if (Pico.rom==NULL) return 1;
 
-  memset(&PicoCpu,0,PicoCpu.pad1-PicoCpu.d); // clear all regs
-  PicoCpu.stopped=0;
-  PicoCpu.srh =0x27; // Supervisor mode
-  PicoCpu.a[7]=PicoCpu.read32(0); // Stack Pointer
-  PicoCpu.membase=0;
-  PicoCpu.pc=PicoCpu.checkpc(PicoCpu.read32(4)); // Program Counter
+  CycloneReset(&PicoCpu);
 
   return 0;
 }
@@ -41,9 +36,9 @@ int SekReset()
 // Run the 68000 for 'cyc' number of cycles and return the number of cycles actually executed
 static inline int DoRun(int cyc)
 {
-  PicoCpu.cycles=cyc;
-  CycloneRun(&PicoCpu);
-  return cyc-PicoCpu.cycles;
+	PicoCpu.cycles=cyc;
+	CycloneRun(&PicoCpu);
+	return cyc-PicoCpu.cycles;
 }
 
 int SekInterrupt(int irq)
