@@ -1297,6 +1297,8 @@ int main(int argc, char **argv)
 	// consoleInitDefault((u16*)SCREEN_BASE_BLOCK_SUB(31), (u16*)CHAR_BASE_BLOCK_SUB(0), 16);
 	consoleDemoInit();
 
+	fifoSendValue32(FIFO_PM, PM_REQ_SLEEP_DISABLE);		// Disable sleep mode to prevent crashes
+
 	// lcdSwap();
 
 	// SoundInit();
