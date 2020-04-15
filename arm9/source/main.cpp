@@ -143,8 +143,8 @@ static void InitSound(const char* filename) {
 	sndFirstID = soundSettings.GetInt("SOUND", "FirstID", 0);
 	sndLastID = soundSettings.GetInt("SOUND", "LastID", 0);
 
-	snd68000addr[0] = soundSettings.GetInt("SOUND", "68000addr1", 0);
-	snd68000addr[1] = soundSettings.GetInt("SOUND", "68000addr2", 0);
+	snd68000addr[0] = soundSettings.GetInt("SOUND", "68Kaddr1", 0);
+	snd68000addr[1] = soundSettings.GetInt("SOUND", "68Kaddr2", 0);
 
 	sprintf(filePath[1], "/_nds/PicoDriveTWL/%s", mmFilePath.c_str());
 
