@@ -149,7 +149,7 @@ static void InitSound(const char* filename) {
 		snd68000addr[1] = soundSettings.GetInt("SOUND", "68Kaddr2", 0);
 	}
 
-	sprintf(filePath[1], "/_nds/PicoDriveTWL/%s", mmFilePath.c_str());
+	sprintf(filePath[1], "/_nds/PicoDriveTWL/sound/%s", mmFilePath.c_str());
 
 	// Load sound bank into memory
 	FILE* soundBank = fopen(filePath[1], "rb");
