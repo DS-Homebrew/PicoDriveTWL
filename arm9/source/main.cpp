@@ -1337,10 +1337,17 @@ int main(int argc, char **argv)
 			romfile=fopen(argv[1], "rb");
 
 			if(romfile == NULL) {
-				return 0; // we didn't get a file
+				return 1; // we didn't get a file
 			}
 			else {
 				sprintf(fileName, argv[1]); // we got a file
+				std::string filename = argv[1];
+				const size_t last_slash_idx = filename.find_last_of("/");
+				if (std::string::npos != last_slash_idx)
+				{
+					filename.erase(0, last_slash_idx + 1);
+				}
+				InitSound(filename.c_str());
 			}
 		} else if (!FileChoose()) {
 			consoleClear();
