@@ -138,6 +138,7 @@ static void InitSound(const char* filename) {
 			break;
 		}
 	}
+	if (access(sndFilePath[0], F_OK) != 0) return;
 	//printf(sndFilePath[0]);
 	//printf("\n");
 
