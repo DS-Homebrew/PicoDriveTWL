@@ -132,15 +132,37 @@ extern u8 sndFirstID;
 extern u8 sndLastID;
 
 extern u16 snd68000addr[2];
+extern u16 sndZ80addr[2];
 
 static void SoundPlayRAM(void) {
-	if (!playSound) return;
+	if (!playSound || snd68000addr[0]==0) return;
 
 	int soundId = 0;
 	if (Pico.ram[snd68000addr[0]] >= sndFirstID && Pico.ram[snd68000addr[0]] <= sndLastID) {
 		soundId = Pico.ram[snd68000addr[0]];
 	} else if (Pico.ram[snd68000addr[1]] >= sndFirstID && Pico.ram[snd68000addr[1]] <= sndLastID) {
 		soundId = Pico.ram[snd68000addr[1]];
+	}
+	if (soundId==0) return;
+
+	soundId -= sndFirstID;
+
+	// External sound
+	if (sndHandlers[prevSndId] != NULL)
+		mmEffectRelease( sndHandlers[prevSndId] );
+	sndHandlers[soundId] = mmEffect(soundId);
+	
+	prevSndId = soundId;
+}
+
+static void SoundPlayZ80(void) {
+	if (!playSound || sndZ80addr[0]==0) return;
+
+	int soundId = 0;
+	if (Pico.zram[sndZ80addr[0]] >= sndFirstID && Pico.zram[sndZ80addr[0]] <= sndLastID) {
+		soundId = Pico.zram[sndZ80addr[0]];
+	} else if (Pico.zram[sndZ80addr[1]] >= sndFirstID && Pico.zram[sndZ80addr[1]] <= sndLastID) {
+		soundId = Pico.zram[sndZ80addr[1]];
 	}
 	if (soundId==0) return;
 
@@ -231,7 +253,11 @@ static void OtherWrite8(u32 a,u32 d)
 	  return; } // PSG Sound
   if ((a&0xffffe0)==0xc00000)  { PicoVideoWrite(a,d|(d<<8)); return; } // Byte access gets mirrored
 
-  if ((a&0xffc000)==0xa00000)  { Pico.zram[a&0x1fff]=(u8)d; return; } // Z80 ram
+  if ((a&0xffc000)==0xa00000)  { // Z80 ram
+	Pico.zram[a&0x1fff]=(u8)d;
+	SoundPlayZ80();
+	return;
+  }
   if ((a&0xfffffc)==0xa04000)  { 
 #ifdef ARM9_SOUND
 	  if(PicoOpt&1) YM2612Write(a, d); 

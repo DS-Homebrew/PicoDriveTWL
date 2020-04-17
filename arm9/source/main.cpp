@@ -118,6 +118,7 @@ u8 sndFirstID = 0;
 u8 sndLastID = 0;
 
 u16 snd68000addr[2] = {0};
+u16 sndZ80addr[2] = {0};
 
 static void InitSound(const char* filename) {
 	if (!isDSiMode()) return;
@@ -125,7 +126,7 @@ static void InitSound(const char* filename) {
 	playSound = false;
 
 	char filePath[2][256];
-	sprintf(filePath[0], "/_nds/PicoDriveTWL/%s", filename);
+	sprintf(filePath[0], "/_nds/PicoDriveTWL/sound/%s", filename);
 	for (int i = (int)sizeof(filePath[0]); i > 0; i--) {
 		if (filePath[0][i] == '.') {
 			// Replace filetype
@@ -147,6 +148,12 @@ static void InitSound(const char* filename) {
 	if (snd68000addr[0] == 0) {
 		snd68000addr[0] = soundSettings.GetInt("SOUND", "68Kaddr1", 0);
 		snd68000addr[1] = soundSettings.GetInt("SOUND", "68Kaddr2", 0);
+	}
+
+	sndZ80addr[0] = soundSettings.GetInt("SOUND", "Z80addr", 0);
+	if (sndZ80addr[0] == 0) {
+		sndZ80addr[0] = soundSettings.GetInt("SOUND", "Z80addr1", 0);
+		sndZ80addr[1] = soundSettings.GetInt("SOUND", "Z80addr2", 0);
 	}
 
 	sprintf(filePath[1], "/_nds/PicoDriveTWL/sound/%s", mmFilePath.c_str());
