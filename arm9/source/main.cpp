@@ -165,7 +165,7 @@ static void InitSound(const char* filename) {
 	// Load sound bank into memory
 	FILE* soundBank = fopen(sndFilePath[1], "rb");
 	if (!soundBank) return;
-	fread((void*)0x02500000, 1, 0x300000, soundBank);
+	fread((void*)0x02500000, 1, 0x500000, soundBank);
 	fclose(soundBank);
 
 	mmInitDefaultMem((mm_addr)0x02500000);
@@ -1059,7 +1059,7 @@ int EmulateInit()
 			// iprintf("ftell: %i\n",i);
 			if (isDSiMode()) {
 				UsingExtendedMemory = true;
-				LoadROMToMemory((uint16*)0x02800000,i);
+				LoadROMToMemory((uint16*)0x02A00000,i);
 			} else if(i >= 0x284000) {
 				sysSetCartOwner(BUS_OWNER_ARM9);
 				struct stat st;
