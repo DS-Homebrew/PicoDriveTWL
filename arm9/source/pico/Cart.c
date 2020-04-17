@@ -8,6 +8,7 @@
 
 
 #include "PicoInt.h"
+char romSpace[0x284000];
 
 void Byteswap(unsigned char *data,int len)
 {
@@ -59,26 +60,21 @@ int DecodeSmd(unsigned char *data,int len)
 
 int PicoCartLoad(FILE *f,unsigned char **prom,unsigned int *psize)
 {
-  unsigned char *rom=NULL; int size=0;
+  int size=0;
   if (f==NULL) return 1;
 
   fseek(f,0,SEEK_END); size=ftell(f); fseek(f,0,SEEK_SET);
 
   size=(size+3)&~3; // Round up to a multiple of 4
 
-  // Allocate space for the rom plus padding
-  rom=(unsigned char *)malloc(size+4);
-  if (rom==NULL) { fclose(f); return 1; }
-  //memset(rom,0,size+4); // notaz: what is that for?
-
-  fread(rom,1,size,f); // Load up the rom
+  fread(romSpace,1,size,f); // Load up the rom
   fclose(f);
 
   // Check for SMD:
-  if ((size&0x3fff)==0x200) { DecodeSmd(rom,size); size-=0x200; } // Decode and byteswap SMD
-  else Byteswap(rom,size); // Just byteswap
+  if ((size&0x3fff)==0x200) { DecodeSmd((unsigned char*)romSpace,size); size-=0x200; } // Decode and byteswap SMD
+  else Byteswap((unsigned char*)romSpace,size); // Just byteswap
   
-  if (prom)  *prom=rom;
+  if (prom)  *prom=(unsigned char*)romSpace;
   if (psize) *psize=size;
 
   return 0;

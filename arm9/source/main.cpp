@@ -1060,7 +1060,7 @@ int EmulateInit()
 			if (isDSiMode()) {
 				UsingExtendedMemory = true;
 				LoadROMToMemory((uint16*)0x02800000,i);
-			} else if(i >= 0x280000) {
+			} else if(i >= 0x284000) {
 				sysSetCartOwner(BUS_OWNER_ARM9);
 				struct stat st;
 				stat("/",&st);

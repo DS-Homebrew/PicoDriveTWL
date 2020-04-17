@@ -5,6 +5,8 @@
 
 #define cacheAmount 4
 
+extern char romSpace[0x284000];
+
 char fileName[256];
 
 static int cachedPages[cacheAmount] = {0};
@@ -37,15 +39,15 @@ void loadRomBank(int page, int i) {
 		if (cachedPages[i2] == page) {
 			if (isDSiMode()) {
 				DC_FlushAll();
-				dmaCopyWords(0, Pico.rom+0x400000+(i2*0x80000), Pico.rom+0x80000+(i*0x80000), 0x80000);
+				dmaCopyWords(0, (char*)romSpace+(i2*0x80000), Pico.rom+0x80000+(i*0x80000), 0x80000);
 			} else {
-				tonccpy(Pico.rom+0x80000+(i*0x80000), Pico.rom+0x400000+(i2*0x80000), 0x80000);
+				tonccpy(Pico.rom+0x80000+(i*0x80000), (char*)romSpace+(i2*0x80000), 0x80000);
 			}
 			return;
 		}
 	}
 
-	char* bankCache = (char*)Pico.rom+0x400000+(currentPage*0x80000);
+	char* bankCache = (char*)romSpace+(currentPage*0x80000);
 
 	romfile = fopen(fileName, "rb");
 
