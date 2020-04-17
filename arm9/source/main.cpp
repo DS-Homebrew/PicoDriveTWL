@@ -164,7 +164,13 @@ static void InitSound(const char* filename) {
 
 	// Load sound bank into memory
 	FILE* soundBank = fopen(sndFilePath[1], "rb");
-	if (!soundBank) return;
+
+	u32 size=0;
+	fseek(soundBank,0,SEEK_END);
+	size=ftell(soundBank);
+	fseek(soundBank,0,SEEK_SET);
+
+	if (!soundBank || size > 0x500000) return;
 	fread((void*)0x02500000, 1, 0x500000, soundBank);
 	fclose(soundBank);
 
