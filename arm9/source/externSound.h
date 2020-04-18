@@ -18,7 +18,7 @@ class SoundControl {
         // Refill the stream buffers
         volatile void updateStream();
 
-        void loadStream(const char* filename);
+        void loadStream(const char* filenameStart, const char* filename);
         void beginStream();
         void stopStream();
         void resetStream();
@@ -35,6 +35,7 @@ class SoundControl {
         mm_stream stream;
         mm_ds_system sys;
         bool stream_is_playing;
+        FILE* stream_start_source;
         FILE* stream_source;
         u32 startup_sample_length;
 };

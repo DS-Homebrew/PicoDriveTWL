@@ -33,9 +33,9 @@ extern char debug_buf[256];
 
 extern volatile u32 sample_delay_count;
 
-bool streamFound = false;
-
-u32 soundSize = 0;
+static bool loopingPoint = false;
+static bool loopingPointFound = false;
+static bool streamFound = false;
 
 SoundControl::SoundControl()
 	: stream_is_playing(false), stream_source(NULL), startup_sample_length(0)
@@ -48,13 +48,27 @@ SoundControl::SoundControl()
 
 	mmInit(&sys);*/
 
+	loopingPoint = false;
 	streamFound = false;
 }
 
-void SoundControl::loadStream(const char* filename) {
+void SoundControl::loadStream(const char* filenameStart, const char* filename) {
 	if (stream_source) {
 		streamFound = false;
+		fclose(stream_start_source);
 		fclose(stream_source);
+	}
+
+	loopingPoint = false;
+	loopingPointFound = false;
+
+	if (strcmp(filenameStart, "") != 0) {
+		stream_start_source = fopen(filenameStart, "rb");
+		if (stream_start_source) {
+			loopingPointFound = true;
+		} else {
+			loopingPoint = true;
+		}
 	}
 
 	stream_source = fopen(filename, "rb");
@@ -62,11 +76,7 @@ void SoundControl::loadStream(const char* filename) {
 
 	//resetStreamSettings();
 
-	fseek(stream_source, 0, SEEK_END);
-	soundSize = ftell(stream_source);					// Get sound stream size
-	fseek(stream_source, 0, SEEK_SET);
-
-	stream.sampling_rate = 16000;	 		// 16000Hz
+	stream.sampling_rate = 32000;	 		// 32000Hz
 	stream.buffer_length = 800;	  			// should be adequate
 	stream.callback = on_stream_request;    
 	stream.format = MM_STREAM_16BIT_MONO;  // select format
@@ -75,10 +85,10 @@ void SoundControl::loadStream(const char* filename) {
 	streamFound = true;
 	
 	// Prep the first section of the stream
-	fread((void*)play_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_source);
+	fread((void*)play_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, loopingPointFound ? stream_start_source : stream_source);
 
 	// Fill the next section premptively
-	fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_source);
+	fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, loopingPointFound ? stream_start_source : stream_source);
 
 	streamFound = true;
 }
@@ -104,13 +114,14 @@ void SoundControl::resetStream() {
 
 	//resetStreamSettings();
 
+	fseek(stream_start_source, 0, SEEK_SET);
 	fseek(stream_source, 0, SEEK_SET);
 
 	// Prep the first section of the stream
-	fread((void*)play_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_source);
+	fread((void*)play_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, loopingPointFound ? stream_start_source : stream_source);
 
 	// Fill the next section premptively
-	fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_source);
+	fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, loopingPointFound ? stream_start_source : stream_source);
 }
 
 void SoundControl::fadeOutStream() {
@@ -158,11 +169,12 @@ volatile void SoundControl::updateStream() {
 		int instance_to_fill = std::min(SAMPLES_LEFT_TO_FILL, SAMPLES_TO_FILL);
 
 		// If we don't read enough samples, loop from the beginning of the file.
-		instance_filled = fread((s16*)fill_stream_buf + filled_samples, sizeof(s16), instance_to_fill, stream_source);
+		instance_filled = fread((s16*)fill_stream_buf + filled_samples, sizeof(s16), instance_to_fill, loopingPoint ? stream_source : stream_start_source);
 		if (instance_filled < instance_to_fill) {
 			fseek(stream_source, 0, SEEK_SET);
 			instance_filled += fread((s16*)fill_stream_buf + filled_samples + instance_filled,
 				 sizeof(s16), (instance_to_fill - instance_filled), stream_source);
+			loopingPoint = true;
 		}
 
 		#ifdef SOUND_DEBUG
@@ -197,7 +209,7 @@ extern u16 snd68000addr[2];
 extern u16 sndZ80addr[2];
 
 extern char sndFilePath[3][256];
-static char musFilePath[256] = {0};
+static char musFilePath[2][256] = {0};
 
 bool MusicPlayRAM(void) {
 	if (!playSound || snd68000addr[0]==0) return false;
@@ -213,8 +225,9 @@ bool MusicPlayRAM(void) {
 	if (soundId==0) return false;
 
 	// External sound
-	snprintf(musFilePath, 256, "%s%X.raw", sndFilePath[2], soundId);
-	snd().loadStream(musFilePath);
+	snprintf(musFilePath[0], 256, "%s%X_start.raw", sndFilePath[2], soundId);
+	snprintf(musFilePath[1], 256, "%s%X.raw", sndFilePath[2], soundId);
+	snd().loadStream(musFilePath[0], musFilePath[1]);
 	snd().beginStream();
 
 	return true;
