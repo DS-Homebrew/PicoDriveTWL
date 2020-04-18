@@ -17,7 +17,7 @@ volatile s32 filled_samples = 0;
 
 // Pointers to the stream buffers.
 volatile s16* play_stream_buf = (s16*)((char*)romSpace+0x200000);
-volatile s16* fill_stream_buf = (s16*)((char*)romSpace+0x240000);
+volatile s16* fill_stream_buf = (s16*)0x02E00000;
 
 
 // Toggle this to true to trigger a fill as soon as possible.

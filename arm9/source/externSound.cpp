@@ -49,6 +49,7 @@ SoundControl::SoundControl()
 	mmInit(&sys);*/
 
 	loopingPoint = false;
+	loopingPointFound = false;
 	streamFound = false;
 }
 
