@@ -19,6 +19,7 @@
 #include "file.h"
 #include "file_browse.h"
 #include "iniFile.h"
+#include "externSound.h"
 
 using namespace std;
 
@@ -111,7 +112,7 @@ void PrintRegion()
 std::string mmFilePath;
 
 bool playSound = false;
-static mm_sound_effect snd[48];
+static mm_sound_effect mdSnd[48];
 mm_sfxhand sndHandlers[48];
 
 u8 sndFirstID = 0;
@@ -120,11 +121,12 @@ u8 sndLastID = 0;
 u16 snd68000addr[2] = {0};
 u16 sndZ80addr[2] = {0};
 
-static char sndFilePath[2][256] = {0};
+static char sndFilePath[3][256] = {0};
 
 static void InitSound(const char* filename) {
 	if (!isDSiMode()) return;
 
+	snd();
 	playSound = false;
 
 	sprintf(sndFilePath[0], "/_nds/PicoDriveTWL/sound/%s", filename);
@@ -180,7 +182,7 @@ static void InitSound(const char* filename) {
 	for (unsigned int i = 0; i < 47; i++) {
 		mmLoadEffect(i);
 
-		snd[i] = {
+		mdSnd[i] = {
 			{i} ,			// id
 			(int)(1.0f * (1<<10)),	// rate
 			sndHandlers[i],		// handle
@@ -190,6 +192,11 @@ static void InitSound(const char* filename) {
 	}
 
 	printf("External sound loaded!\n");
+
+	sprintf(sndFilePath[2], "/_nds/PicoDriveTWL/sound/%s", "test.raw");
+	snd().loadStream(sndFilePath[2]);
+	snd().beginStream();
+
 	playSound = true;
 }
 
@@ -1412,6 +1419,7 @@ int main(int argc, char **argv)
 
 	while(1) {
 		if(choosingfile) {
+			snd().stopStream();
 			mmEffectCancelAll();
 			ConvertToGrayscale();
 			for (int i = 0; i < 30; i++) swiWaitForVBlank();
@@ -1420,6 +1428,7 @@ int main(int argc, char **argv)
 			}
 			else {
 				consoleClear();
+				snd().beginStream();
 			}
 			choosingfile = 0;
 		}
@@ -1432,6 +1441,7 @@ int main(int argc, char **argv)
 		*/
 
 		EmulateFrame();
+		snd().updateStream();
 		// Save SRAM
 		if(Pico.m.sram_changed) {
 			// iprintf("\x1b[17:0HSaving SRAM");
