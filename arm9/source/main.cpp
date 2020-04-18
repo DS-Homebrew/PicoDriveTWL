@@ -115,13 +115,16 @@ bool playSound = false;
 static mm_sound_effect mdSnd[48];
 mm_sfxhand sndHandlers[48];
 
+u8 musFirstID = 0;
+u8 musLastID = 0;
+
 u8 sndFirstID = 0;
 u8 sndLastID = 0;
 
 u16 snd68000addr[2] = {0};
 u16 sndZ80addr[2] = {0};
 
-static char sndFilePath[3][256] = {0};
+char sndFilePath[3][256] = {0};
 
 static void InitSound(const char* filename) {
 	if (!isDSiMode()) return;
@@ -149,6 +152,9 @@ static void InitSound(const char* filename) {
 	sprintf(sndFilePath[1], "/_nds/PicoDriveTWL/sound/%s", mmFilePath.c_str());
 	//printf(sndFilePath[1]);
 	//printf("\n");
+
+	musFirstID = soundSettings.GetInt("MUSIC", "FirstID", 0);
+	musLastID = soundSettings.GetInt("MUSIC", "LastID", 0);
 
 	sndFirstID = soundSettings.GetInt("SOUND", "FirstID", 0);
 	sndLastID = soundSettings.GetInt("SOUND", "LastID", 0);
@@ -193,9 +199,10 @@ static void InitSound(const char* filename) {
 
 	printf("External sound loaded!\n");
 
-	sprintf(sndFilePath[2], "/_nds/PicoDriveTWL/sound/%s", "test.raw");
-	snd().loadStream(sndFilePath[2]);
-	snd().beginStream();
+	mmFilePath = soundSettings.GetString("MUSIC", "Foldername", "");	// Grab filename from .ini file
+	sprintf(sndFilePath[2], "/_nds/PicoDriveTWL/sound/%s/", mmFilePath.c_str());
+	//snd().loadStream(sndFilePath[2]);
+	//snd().beginStream();
 
 	playSound = true;
 }

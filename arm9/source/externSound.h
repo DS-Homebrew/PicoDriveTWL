@@ -42,4 +42,8 @@ class SoundControl {
 typedef singleton<SoundControl> soundCtl_s;
 inline SoundControl &snd() { return soundCtl_s::instance(); }
 
+extern bool MusicPlayRAM(void);
+extern void SoundPlayRAM(void);
+extern void SoundPlayZ80(void);
+
 #endif

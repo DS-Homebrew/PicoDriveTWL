@@ -1,5 +1,6 @@
 #include "externSound.h"
 
+#include "Pico/PicoInt.h"
 #include "streamingaudio.h"
 #include "string.h"
 #include "tonccpy.h"
@@ -35,8 +36,6 @@ extern volatile u32 sample_delay_count;
 bool streamFound = false;
 
 u32 soundSize = 0;
-
-int positionInSoundFile = 0;
 
 SoundControl::SoundControl()
 	: stream_is_playing(false), stream_source(NULL), startup_sample_length(0)
@@ -74,7 +73,6 @@ void SoundControl::loadStream(const char* filename) {
 	stream.timer = MM_TIMER0;	    	   // use timer0
 	stream.manual = false;	      		   // auto filling
 	streamFound = true;
-	positionInSoundFile = STREAMING_BUF_LENGTH*2;
 	
 	// Prep the first section of the stream
 	fread((void*)play_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_source);
@@ -105,7 +103,6 @@ void SoundControl::resetStream() {
 	if (!streamFound) return;
 
 	//resetStreamSettings();
-	positionInSoundFile = STREAMING_BUF_LENGTH*2;
 
 	fseek(stream_source, 0, SEEK_SET);
 
@@ -160,11 +157,12 @@ volatile void SoundControl::updateStream() {
 		// Either fill the max amount, or fill up the buffer as much as possible.
 		int instance_to_fill = std::min(SAMPLES_LEFT_TO_FILL, SAMPLES_TO_FILL);
 
-		// If we don't read enough samples, stop.
+		// If we don't read enough samples, loop from the beginning of the file.
 		instance_filled = fread((s16*)fill_stream_buf + filled_samples, sizeof(s16), instance_to_fill, stream_source);
 		if (instance_filled < instance_to_fill) {
-			instance_filled++;
-			toncset((s16*)fill_stream_buf + filled_samples + instance_filled, 0, (instance_to_fill - instance_filled));
+			fseek(stream_source, 0, SEEK_SET);
+			instance_filled += fread((s16*)fill_stream_buf + filled_samples + instance_filled,
+				 sizeof(s16), (instance_to_fill - instance_filled), stream_source);
 		}
 
 		#ifdef SOUND_DEBUG
@@ -175,6 +173,7 @@ volatile void SoundControl::updateStream() {
 		// maintain invariant 0 < filled_samples <= STREAMING_BUF_LENGTH
 		filled_samples = std::min<s32>(filled_samples + instance_filled, STREAMING_BUF_LENGTH);
 	
+
 	} else if (fill_requested && filled_samples >= STREAMING_BUF_LENGTH) {
 		// filled_samples == STREAMING_BUF_LENGTH is the only possible case
 		// but we'll keep it at gte to be safe.
@@ -182,4 +181,83 @@ volatile void SoundControl::updateStream() {
 		// fill_count = 0;
 	}
 
+}
+
+extern bool playSound;
+extern mm_sfxhand sndHandlers[48];
+static int prevSndId = 0;
+
+extern u8 musFirstID;
+extern u8 musLastID;
+
+extern u8 sndFirstID;
+extern u8 sndLastID;
+
+extern u16 snd68000addr[2];
+extern u16 sndZ80addr[2];
+
+extern char sndFilePath[3][256];
+static char musFilePath[256] = {0};
+
+bool MusicPlayRAM(void) {
+	if (!playSound || snd68000addr[0]==0) return false;
+
+	int soundId = 0;
+	if (Pico.ram[snd68000addr[0]] >= musFirstID && Pico.ram[snd68000addr[0]] <= musLastID) {
+		soundId = Pico.ram[snd68000addr[0]];
+		snd().stopStream();
+	} else if (Pico.ram[snd68000addr[1]] >= musFirstID && Pico.ram[snd68000addr[1]] <= musLastID) {
+		soundId = Pico.ram[snd68000addr[1]];
+		snd().stopStream();
+	}
+	if (soundId==0) return false;
+
+	// External sound
+	snprintf(musFilePath, 256, "%s%X.raw", sndFilePath[2], soundId);
+	snd().loadStream(musFilePath);
+	snd().beginStream();
+
+	return true;
+}
+
+void SoundPlayRAM(void) {
+	if (!playSound || snd68000addr[0]==0) return;
+
+	int soundId = 0;
+	if (Pico.ram[snd68000addr[0]] >= sndFirstID && Pico.ram[snd68000addr[0]] <= sndLastID) {
+		soundId = Pico.ram[snd68000addr[0]];
+	} else if (Pico.ram[snd68000addr[1]] >= sndFirstID && Pico.ram[snd68000addr[1]] <= sndLastID) {
+		soundId = Pico.ram[snd68000addr[1]];
+	}
+	if (soundId==0) return;
+
+	soundId -= sndFirstID;
+
+	// External sound
+	if (sndHandlers[prevSndId] != NULL)
+		mmEffectRelease( sndHandlers[prevSndId] );
+	sndHandlers[soundId] = mmEffect(soundId);
+	
+	prevSndId = soundId;
+}
+
+void SoundPlayZ80(void) {
+	if (!playSound || sndZ80addr[0]==0) return;
+
+	int soundId = 0;
+	if (Pico.zram[sndZ80addr[0]] >= sndFirstID && Pico.zram[sndZ80addr[0]] <= sndLastID) {
+		soundId = Pico.zram[sndZ80addr[0]];
+	} else if (Pico.zram[sndZ80addr[1]] >= sndFirstID && Pico.zram[sndZ80addr[1]] <= sndLastID) {
+		soundId = Pico.zram[sndZ80addr[1]];
+	}
+	if (soundId==0) return;
+
+	soundId -= sndFirstID;
+
+	// External sound
+	if (sndHandlers[prevSndId] != NULL)
+		mmEffectRelease( sndHandlers[prevSndId] );
+	sndHandlers[soundId] = mmEffect(soundId);
+	
+	prevSndId = soundId;
 }
