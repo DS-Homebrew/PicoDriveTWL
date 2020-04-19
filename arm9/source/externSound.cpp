@@ -220,15 +220,15 @@ TWL_CODE volatile void SoundControl::twl_updateStream() {
 		// If we don't read enough samples, loop from the beginning of the file.
 		instance_filled = fread((s16*)fill_stream_buf + filled_samples, sizeof(s16), instance_to_fill, loopingPoint ? stream_source : stream_start_source);
 		if (instance_filled < instance_to_fill) {
-			if (musicLoopable) {
-				fseek(stream_source, 0, SEEK_SET);
-				instance_filled += fread((s16*)fill_stream_buf + filled_samples + instance_filled,
-					 sizeof(s16), (instance_to_fill - instance_filled), stream_source);
-				loopingPoint = true;
-			} else {
-				instance_filled++;
+			if (musicLoopable) fseek(stream_source, 0, SEEK_SET);
+			int i = fread((s16*)fill_stream_buf + filled_samples + instance_filled,
+				 sizeof(s16), (instance_to_fill - instance_filled), stream_source);
+			if (i==0) {
 				toncset((s16*)fill_stream_buf + filled_samples + instance_filled, 0, (instance_to_fill - instance_filled)*sizeof(s16));
+			} else {
+				instance_filled += i;
 			}
+			loopingPoint = true;
 		}
 
 		#ifdef SOUND_DEBUG
