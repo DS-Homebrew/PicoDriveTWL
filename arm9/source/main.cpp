@@ -1441,6 +1441,10 @@ int main(int argc, char **argv)
 	// int mallCount = 0;
 
 	while(1) {
+		extern bool streamFound;
+		if(streamFound) {
+			choosingfile = 0;
+		}
 		if(choosingfile) {
 			if (!soundPaused) {
 				snd().stopStream();

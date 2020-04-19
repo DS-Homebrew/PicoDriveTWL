@@ -16,12 +16,15 @@ class SoundControl {
         SoundControl();
 
         // Refill the stream buffers
+        volatile void twl_updateStream();
         volatile void updateStream();
 
+        void twl_loadStream(const char* filenameStart, const char* filename);
         void loadStream(const char* filenameStart, const char* filename);
         void beginStream();
         void stopStream();
         void closeStream();
+        void twl_resetStream();
         void resetStream();
         void fadeOutStream();
         void cancelFadeOutStream();

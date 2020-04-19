@@ -37,7 +37,7 @@ extern volatile u32 sample_delay_count;
 static bool musicLoopable = true;
 static bool loopingPoint = false;
 static bool loopingPointFound = false;
-static bool streamFound = false;
+bool streamFound = false;
 
 SoundControl::SoundControl()
 	: stream_is_playing(false), stream_source(NULL), startup_sample_length(0)
@@ -56,7 +56,7 @@ SoundControl::SoundControl()
 	streamFound = false;
 }
 
-void SoundControl::loadStream(const char* filenameStart, const char* filename) {
+TWL_CODE void SoundControl::twl_loadStream(const char* filenameStart, const char* filename) {
 	if (stream_source) {
 		streamFound = false;
 		fclose(stream_start_source);
@@ -105,7 +105,7 @@ void SoundControl::loadStream(const char* filenameStart, const char* filename) {
 		} else {
 			// Fill the next section premptively
 			fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_start_source);
-			if (fileSize < (STREAMING_BUF_LENGTH*sizeof(s16))*2) {
+			if (fileSize < STREAMING_BUF_LENGTH) {
 				size_t fillerSize = 0;
 				while (fileSize+fillerSize < STREAMING_BUF_LENGTH*sizeof(s16)) {
 					fillerSize++;
@@ -124,6 +124,10 @@ void SoundControl::loadStream(const char* filenameStart, const char* filename) {
 	}
 
 	streamFound = true;
+}
+void SoundControl::loadStream(const char* filenameStart, const char* filename) {
+	if (!isDSiMode()) return;
+	snd().twl_loadStream(filenameStart, filename);
 }
 
 void SoundControl::beginStream() {
@@ -150,7 +154,7 @@ void SoundControl::closeStream() {
 	mmStreamClose();
 }
 
-void SoundControl::resetStream() {
+TWL_CODE void SoundControl::twl_resetStream() {
 	if (!streamFound) return;
 
 	resetStreamSettings();
@@ -163,6 +167,10 @@ void SoundControl::resetStream() {
 
 	// Fill the next section premptively
 	fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, loopingPointFound ? stream_start_source : stream_source);
+}
+void SoundControl::resetStream() {
+	if (!isDSiMode()) return;
+	snd().twl_resetStream();
 }
 
 void SoundControl::fadeOutStream() {
@@ -197,7 +205,7 @@ void SoundControl::setStreamDelay(u32 delay) {
 // filled_samples <= STREAMING_BUF_LENGTH
 // filled_samples <= streaming_buf_ptr
 // fill_requested == false
-volatile void SoundControl::updateStream() {
+TWL_CODE volatile void SoundControl::twl_updateStream() {
 	
 	if (!streamFound || !stream_is_playing) return;
 	if (fill_requested && filled_samples < STREAMING_BUF_LENGTH) {
@@ -239,6 +247,10 @@ volatile void SoundControl::updateStream() {
 		// fill_count = 0;
 	}
 
+}
+volatile void SoundControl::updateStream() {
+	if (!isDSiMode()) return;
+	snd().twl_updateStream();
 }
 
 extern bool playSound;
