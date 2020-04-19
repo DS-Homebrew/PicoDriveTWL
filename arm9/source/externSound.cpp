@@ -121,6 +121,8 @@ TWL_CODE void SoundControl::twl_loadStream(const char* filenameStart, const char
 
 		// Fill the next section premptively
 		fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_source);
+
+		loopingPoint = true;
 	}
 
 	streamFound = true;
