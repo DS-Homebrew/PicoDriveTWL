@@ -170,7 +170,7 @@ void SoundControl::setStreamDelay(u32 delay) {
 // fill_requested == false
 volatile void SoundControl::updateStream() {
 	
-	if (!stream_is_playing) return;
+	if (!streamFound || !stream_is_playing) return;
 	if (fill_requested && filled_samples < STREAMING_BUF_LENGTH) {
 			
 		// Reset the fill request
