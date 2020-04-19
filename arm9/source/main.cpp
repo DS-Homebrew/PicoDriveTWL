@@ -112,6 +112,7 @@ void PrintRegion()
 std::string mmFilePath;
 
 bool playSound = false;
+bool soundPaused = false;
 static mm_sound_effect mdSnd[48];
 mm_sfxhand sndHandlers[48];
 
@@ -120,9 +121,16 @@ u8 musLastID = 0;
 
 u8 sndFirstID = 0;
 u8 sndLastID = 0;
+u8 sndStopID = 0;
+
+u8 pauseID = 0;
+u8 unpauseID = 0;
 
 u16 snd68000addr[2] = {0};
 u16 sndZ80addr[2] = {0};
+
+u16 pause68000addr = 0;
+u16 pauseZ80addr = 0;
 
 char sndFilePath[3][256] = {0};
 
@@ -131,6 +139,7 @@ static void InitSound(const char* filename) {
 
 	snd();
 	playSound = false;
+	soundPaused = false;
 
 	sprintf(sndFilePath[0], "/_nds/PicoDriveTWL/sound/%s", filename);
 	for (int i = (int)sizeof(sndFilePath[0]); i > 0; i--) {
@@ -158,6 +167,7 @@ static void InitSound(const char* filename) {
 
 	sndFirstID = soundSettings.GetInt("SOUND", "FirstID", 0);
 	sndLastID = soundSettings.GetInt("SOUND", "LastID", 0);
+	sndStopID = soundSettings.GetInt("SOUND", "StopID", 0);
 
 	snd68000addr[0] = soundSettings.GetInt("SOUND", "68Kaddr", 0);
 	if (snd68000addr[0] == 0) {
@@ -170,6 +180,12 @@ static void InitSound(const char* filename) {
 		sndZ80addr[0] = soundSettings.GetInt("SOUND", "Z80addr1", 0);
 		sndZ80addr[1] = soundSettings.GetInt("SOUND", "Z80addr2", 0);
 	}
+
+	pauseID = soundSettings.GetInt("SOUND", "PauseID", 0);
+	unpauseID = soundSettings.GetInt("SOUND", "UnpauseID", 0);
+
+	pause68000addr = soundSettings.GetInt("SOUND", "Pause68Kaddr", 0);
+	pauseZ80addr = soundSettings.GetInt("SOUND", "PauseZ80addr", 0);
 
 	// Load sound bank into memory
 	FILE* soundBank = fopen(sndFilePath[1], "rb");
@@ -1426,8 +1442,10 @@ int main(int argc, char **argv)
 
 	while(1) {
 		if(choosingfile) {
-			snd().stopStream();
-			mmEffectCancelAll();
+			if (!soundPaused) {
+				snd().stopStream();
+				mmEffectCancelAll();
+			}
 			ConvertToGrayscale();
 			for (int i = 0; i < 30; i++) swiWaitForVBlank();
 			if(EmulateExit()) {
@@ -1435,7 +1453,7 @@ int main(int argc, char **argv)
 			}
 			else {
 				consoleClear();
-				snd().beginStream();
+				if (!soundPaused) snd().beginStream();
 			}
 			choosingfile = 0;
 		}
@@ -1448,7 +1466,7 @@ int main(int argc, char **argv)
 		*/
 
 		EmulateFrame();
-		snd().updateStream();
+		if (!soundPaused) snd().updateStream();
 		// Save SRAM
 		if(Pico.m.sram_changed) {
 			// iprintf("\x1b[17:0HSaving SRAM");

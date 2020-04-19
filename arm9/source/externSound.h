@@ -21,6 +21,7 @@ class SoundControl {
         void loadStream(const char* filenameStart, const char* filename);
         void beginStream();
         void stopStream();
+        void closeStream();
         void resetStream();
         void fadeOutStream();
         void cancelFadeOutStream();

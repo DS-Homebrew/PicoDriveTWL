@@ -75,7 +75,7 @@ void SoundControl::loadStream(const char* filenameStart, const char* filename) {
 	stream_source = fopen(filename, "rb");
 	if (!stream_source) return;
 
-	//resetStreamSettings();
+	resetStreamSettings();
 
 	stream.sampling_rate = 32000;	 		// 32000Hz
 	stream.buffer_length = 800;	  			// should be adequate
@@ -110,10 +110,18 @@ void SoundControl::stopStream() {
 	mmStreamClose();
 }
 
+void SoundControl::closeStream() {
+	if (!streamFound || !stream_is_playing) return;
+
+	streamFound = false;
+	stream_is_playing = false;
+	mmStreamClose();
+}
+
 void SoundControl::resetStream() {
 	if (!streamFound) return;
 
-	//resetStreamSettings();
+	resetStreamSettings();
 
 	fseek(stream_start_source, 0, SEEK_SET);
 	fseek(stream_source, 0, SEEK_SET);
@@ -197,6 +205,7 @@ volatile void SoundControl::updateStream() {
 }
 
 extern bool playSound;
+extern bool soundPaused;
 extern mm_sfxhand sndHandlers[48];
 static u8 currentMusId = 0;
 static u8 prevSndId = 0;
@@ -206,9 +215,16 @@ extern u8 musLastID;
 
 extern u8 sndFirstID;
 extern u8 sndLastID;
+extern u8 sndStopID;
+
+extern u8 pauseID;
+extern u8 unpauseID;
 
 extern u16 snd68000addr[2];
 extern u16 sndZ80addr[2];
+
+extern u16 pause68000addr;
+extern u16 pauseZ80addr;
 
 extern char sndFilePath[3][256];
 static char musFilePath[2][256] = {0};
@@ -247,6 +263,25 @@ bool MusicPlayRAM(void) {
 void SoundPlayRAM(void) {
 	if (!playSound || snd68000addr[0]==0) return;
 
+	if (pause68000addr != 0) {
+		if (Pico.ram[pause68000addr] == pauseID && !soundPaused) {
+			snd().stopStream();
+			mmEffectCancelAll();
+			soundPaused = true;
+			return;
+		} else if (Pico.ram[pause68000addr] == unpauseID && soundPaused) {
+			snd().beginStream();
+			soundPaused = false;
+			return;
+		}
+	}
+
+	if (Pico.ram[snd68000addr[0]] == sndStopID || Pico.ram[snd68000addr[1]] == sndStopID) {
+		snd().closeStream();
+		mmEffectCancelAll();
+		return;
+	}
+
 	u8 soundId = 0;
 	if (Pico.ram[snd68000addr[0]] >= sndFirstID && Pico.ram[snd68000addr[0]] <= sndLastID) {
 		soundId = Pico.ram[snd68000addr[0]];
@@ -267,6 +302,19 @@ void SoundPlayRAM(void) {
 
 void SoundPlayZ80(void) {
 	if (!playSound || sndZ80addr[0]==0) return;
+
+	if (pauseZ80addr != 0) {
+		if (Pico.zram[pauseZ80addr] == pauseID && !soundPaused) {
+			snd().stopStream();
+			mmEffectCancelAll();
+			soundPaused = true;
+			return;
+		} else if (Pico.zram[pauseZ80addr] == unpauseID && soundPaused) {
+			snd().beginStream();
+			soundPaused = false;
+			return;
+		}
+	}
 
 	u8 soundId = 0;
 	if (Pico.zram[sndZ80addr[0]] >= sndFirstID && Pico.zram[sndZ80addr[0]] <= sndLastID) {

@@ -32,6 +32,22 @@ volatile u32 sample_delay_count = 0;
 char debug_buf[256] = {0};
 #endif
 
+void resetStreamSettings() {
+	streaming_buf_ptr = 0;
+	filled_samples = 0;
+
+	play_stream_buf = (s16*)((char*)romSpace+0x200000);
+	fill_stream_buf = (s16*)0x02E00000;
+
+
+	fill_requested = false;
+
+	fade_counter = FADE_STEPS;
+	fade_out = false;
+
+	sample_delay_count = 0;
+}
+
 /*
  * The maxmod stream request handler. 
  * 
