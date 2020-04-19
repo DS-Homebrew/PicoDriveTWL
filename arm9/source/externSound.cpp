@@ -198,7 +198,8 @@ volatile void SoundControl::updateStream() {
 
 extern bool playSound;
 extern mm_sfxhand sndHandlers[48];
-static int prevSndId = 0;
+static u8 currentMusId = 0;
+static u8 prevSndId = 0;
 
 extern u8 musFirstID;
 extern u8 musLastID;
@@ -215,20 +216,29 @@ static char musFilePath[2][256] = {0};
 bool MusicPlayRAM(void) {
 	if (!playSound || snd68000addr[0]==0) return false;
 
-	int soundId = 0;
+	u8 soundId = 0;
 	if (Pico.ram[snd68000addr[0]] >= musFirstID && Pico.ram[snd68000addr[0]] <= musLastID) {
 		soundId = Pico.ram[snd68000addr[0]];
-		snd().stopStream();
 	} else if (Pico.ram[snd68000addr[1]] >= musFirstID && Pico.ram[snd68000addr[1]] <= musLastID) {
 		soundId = Pico.ram[snd68000addr[1]];
-		snd().stopStream();
 	}
-	if (soundId==0) return false;
+	if (soundId==0 || currentMusId==soundId) {
+		return false;
+	}
+	snd().stopStream();
+	currentMusId = soundId;
+
+	//printf ("\x1b[22;1H");
+	//printf ("Now Loading...");
 
 	// External sound
 	snprintf(musFilePath[0], 256, "%s%X_start.raw", sndFilePath[2], soundId);
 	snprintf(musFilePath[1], 256, "%s%X.raw", sndFilePath[2], soundId);
 	snd().loadStream(musFilePath[0], musFilePath[1]);
+
+	//printf ("\x1b[22;1H");
+	//printf ("              ");
+
 	snd().beginStream();
 
 	return true;
@@ -237,7 +247,7 @@ bool MusicPlayRAM(void) {
 void SoundPlayRAM(void) {
 	if (!playSound || snd68000addr[0]==0) return;
 
-	int soundId = 0;
+	u8 soundId = 0;
 	if (Pico.ram[snd68000addr[0]] >= sndFirstID && Pico.ram[snd68000addr[0]] <= sndLastID) {
 		soundId = Pico.ram[snd68000addr[0]];
 	} else if (Pico.ram[snd68000addr[1]] >= sndFirstID && Pico.ram[snd68000addr[1]] <= sndLastID) {
@@ -258,7 +268,7 @@ void SoundPlayRAM(void) {
 void SoundPlayZ80(void) {
 	if (!playSound || sndZ80addr[0]==0) return;
 
-	int soundId = 0;
+	u8 soundId = 0;
 	if (Pico.zram[sndZ80addr[0]] >= sndFirstID && Pico.zram[sndZ80addr[0]] <= sndLastID) {
 		soundId = Pico.zram[sndZ80addr[0]];
 	} else if (Pico.zram[sndZ80addr[1]] >= sndFirstID && Pico.zram[sndZ80addr[1]] <= sndLastID) {
