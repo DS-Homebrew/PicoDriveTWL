@@ -3,6 +3,7 @@
 #include "Pico/PicoInt.h"
 #include "streamingaudio.h"
 #include "string.h"
+#include "iniFile.h"
 #include "tonccpy.h"
 #include <algorithm>
 
@@ -33,6 +34,7 @@ extern char debug_buf[256];
 
 extern volatile u32 sample_delay_count;
 
+static bool musicLoopable = true;
 static bool loopingPoint = false;
 static bool loopingPointFound = false;
 static bool streamFound = false;
@@ -48,6 +50,7 @@ SoundControl::SoundControl()
 
 	mmInit(&sys);*/
 
+	musicLoopable = true;
 	loopingPoint = false;
 	loopingPointFound = false;
 	streamFound = false;
@@ -180,10 +183,15 @@ volatile void SoundControl::updateStream() {
 		// If we don't read enough samples, loop from the beginning of the file.
 		instance_filled = fread((s16*)fill_stream_buf + filled_samples, sizeof(s16), instance_to_fill, loopingPoint ? stream_source : stream_start_source);
 		if (instance_filled < instance_to_fill) {
-			fseek(stream_source, 0, SEEK_SET);
-			instance_filled += fread((s16*)fill_stream_buf + filled_samples + instance_filled,
-				 sizeof(s16), (instance_to_fill - instance_filled), stream_source);
-			loopingPoint = true;
+			if (musicLoopable) {
+				fseek(stream_source, 0, SEEK_SET);
+				instance_filled += fread((s16*)fill_stream_buf + filled_samples + instance_filled,
+					 sizeof(s16), (instance_to_fill - instance_filled), stream_source);
+				loopingPoint = true;
+			} else {
+				instance_filled++;
+				toncset((s16*)fill_stream_buf + filled_samples + instance_filled, 0, (instance_to_fill - instance_filled)*sizeof(s16));
+			}
 		}
 
 		#ifdef SOUND_DEBUG
@@ -246,6 +254,12 @@ bool MusicPlayRAM(void) {
 
 	//printf ("\x1b[22;1H");
 	//printf ("Now Loading...");
+
+	char musicIdText[16];
+	sprintf(musicIdText, "MUSIC-%X", soundId);
+
+	CIniFile soundSettings(sndFilePath[0]);
+	musicLoopable = soundSettings.GetInt(musicIdText, "Loop", true);
 
 	// External sound
 	snprintf(musFilePath[0], 256, "%s%X_start.raw", sndFilePath[2], soundId);
