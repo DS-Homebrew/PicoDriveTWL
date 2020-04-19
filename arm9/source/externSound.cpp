@@ -68,11 +68,7 @@ void SoundControl::loadStream(const char* filenameStart, const char* filename) {
 
 	if (strcmp(filenameStart, "") != 0) {
 		stream_start_source = fopen(filenameStart, "rb");
-		if (stream_start_source) {
-			loopingPointFound = true;
-		} else {
-			loopingPoint = true;
-		}
+		loopingPointFound = (stream_start_source);
 	}
 
 	stream_source = fopen(filename, "rb");
@@ -88,11 +84,44 @@ void SoundControl::loadStream(const char* filenameStart, const char* filename) {
 	stream.manual = false;	      		   // auto filling
 	streamFound = true;
 	
-	// Prep the first section of the stream
-	fread((void*)play_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, loopingPointFound ? stream_start_source : stream_source);
+	if (loopingPointFound) {
+		fseek(stream_start_source, 0, SEEK_END);
+		size_t fileSize = ftell(stream_start_source);
+		fseek(stream_start_source, 0, SEEK_SET);
 
-	// Fill the next section premptively
-	fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, loopingPointFound ? stream_start_source : stream_source);
+		// Prep the first section of the stream
+		fread((void*)play_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_start_source);
+		if (fileSize < STREAMING_BUF_LENGTH*sizeof(s16)) {
+			size_t fillerSize = 0;
+			while (fileSize+fillerSize < STREAMING_BUF_LENGTH*sizeof(s16)) {
+				fillerSize++;
+			}
+			fread((void*)play_stream_buf+fileSize, 1, fillerSize, stream_source);
+
+			// Fill the next section premptively
+			fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_source);
+
+			loopingPoint = true;
+		} else {
+			// Fill the next section premptively
+			fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_start_source);
+			if (fileSize < (STREAMING_BUF_LENGTH*sizeof(s16))*2) {
+				size_t fillerSize = 0;
+				while (fileSize+fillerSize < STREAMING_BUF_LENGTH*sizeof(s16)) {
+					fillerSize++;
+				}
+				fread((void*)fill_stream_buf+fileSize, 1, fillerSize, stream_source);
+
+				loopingPoint = true;
+			}
+		}
+	} else {
+		// Prep the first section of the stream
+		fread((void*)play_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_source);
+
+		// Fill the next section premptively
+		fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_source);
+	}
 
 	streamFound = true;
 }
