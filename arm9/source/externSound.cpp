@@ -105,7 +105,8 @@ TWL_CODE void SoundControl::twl_loadStream(const char* filenameStart, const char
 		} else {
 			// Fill the next section premptively
 			fread((void*)fill_stream_buf, sizeof(s16), STREAMING_BUF_LENGTH, stream_start_source);
-			if (fileSize < STREAMING_BUF_LENGTH) {
+			fileSize -= STREAMING_BUF_LENGTH*sizeof(s16);
+			if (fileSize < STREAMING_BUF_LENGTH*sizeof(s16)) {
 				size_t fillerSize = 0;
 				while (fileSize+fillerSize < STREAMING_BUF_LENGTH*sizeof(s16)) {
 					fillerSize++;
