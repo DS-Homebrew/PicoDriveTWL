@@ -131,7 +131,7 @@ dist:	all
 	@tar -cvjf $(TARGET)-$(VERSION).tar.bz2 hbmenu testfiles README.html COPYING hbmenu -X exclude.lst
 	
 $(TARGET).nds:	$(TARGET).arm7 $(TARGET).arm9
-	ndstool	-u 00030004 -g EPDA 00 "PICODRIVE" -c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf \
+	ndstool	-u 00030004 -c $(TARGET).nds -7 $(TARGET).arm7.elf -9 $(TARGET).arm9.elf \
   -b genesis-32x32.bmp "PicoDrive TWL;Version $(VERSION);Ryan FB, RocketRobz"
 	python27 fix_ndsheader.py $(CURDIR)/$(TARGET).nds
 
