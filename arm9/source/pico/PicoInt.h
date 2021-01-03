@@ -58,7 +58,6 @@ extern int m68k_ICount;
 extern struct Cyclone PicoCpu;
 #define SekCycles PicoCpu.cycles
 #endif
-
 // ---------------------------------------------------------
 
 // main oscillator clock which controls timing
@@ -82,7 +81,7 @@ struct PicoMisc
   unsigned char z80Run;
   unsigned char padTHPhase[2]; // phase of gamepad TH switches
   short scanline; // -38||-88 to 223
-  char dirtyPal; // Is the palette dirty (currently unused)
+  char dirtyPal; // Is the palette dirty
   unsigned char hardware; // Hardware value for country
   unsigned char pal; // 1=PAL 0=NTSC
   unsigned char sram_reg; // notaz: SRAM mode register. bit0: allow read? bit1: deny write?

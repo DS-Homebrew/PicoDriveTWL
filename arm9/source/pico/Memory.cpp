@@ -21,7 +21,6 @@
 // typedef unsigned short u16;
 // typedef unsigned int   u32;
 
-
 static __inline int PicoMemBase(u32 pc)
 {
   int membase=0;
@@ -57,6 +56,8 @@ static void CPU_CALL PicoCheckPc(u32 pc)
 #endif
 
 #ifdef EMU_C68K
+extern "C" u32 PicoCheckPc(u32 pc);
+/*
 static u32 PicoCheckPc(u32 pc)
 {
   //u32 res, add;
@@ -67,19 +68,8 @@ static u32 PicoCheckPc(u32 pc)
   PicoCpu.membase=PicoMemBase(pc);
 
   return PicoCpu.membase+pc;
-/* ineffective
-  // check for common situation with tst and branch opcode waiting loops
-  // cyclone must be prepared for this to work
-  if(((op=*(u16 *)res) & 0xFF00) == 0x4A00) { // we are jumping on tst opcode
-    add = 2;
-    if((op & 0x38) == 0x38) add += 2 << (op&1); // with word or long operand
-	op = *(u16 *)(res+add); add += 2;
-	if((op >> 12) == 6 && (char)op == (char)-add) // next op is branch back to tst
-	  PicoCpu.cycles=8; // burn cycles
-  }
-  return res;
-*/
 }
+*/
 #endif
 
 #ifdef EMU_NULL
@@ -94,15 +84,15 @@ int PicoInitPc(u32 pc)
 }
 
 // -----------------------------------------------------------------
+extern "C" int PadRead(int i);
+/*
 static int PadRead(int i)
 {
   int pad=0,value=0,TH;
   pad=~PicoPad[i]; // Get inverse of pad MXYZ SACB RLDU
   TH=Pico.ioports[i+1]&0x40;
-
   if(PicoOpt & 0x20) { // 6 button gamepad enabled
     int phase = Pico.m.padTHPhase[i];
-
 	if(phase == 2 && !TH) {
 	  value=(pad&0xc0)>>2;              // ?0SA 0000
 	  goto end;
@@ -114,17 +104,14 @@ static int PadRead(int i)
 	  goto end;
     }
   }
-
   if(TH) value=(pad&0x3f);              // ?1CB RLDU
   else   value=((pad&0xc0)>>2)|(pad&3); // ?0SA 00DU
-
   end:
-
   // orr the bits, which are set as output
   value |= Pico.ioports[i+1]&Pico.ioports[i+4];
-
   return value; // will mirror later
 }
+*/
 
 // notaz: address must already be checked
 static int SRAMRead(u32 a)
@@ -132,39 +119,26 @@ static int SRAMRead(u32 a)
   return *(u16 *)(SRam.data-SRam.start+a);
 }
 
+extern "C" u32 OtherRead16(u32 a);
+/*
 static u32 OtherRead16(u32 a)
 {
   u32 d=0;
-
-  if ((a&0xffc000)==0xa00000)
-  {
+  if ((a&0xffc000)==0xa00000){
 	a&=0x1fff;
-
 	if(!(PicoOpt&4)) {
       // Z80 disabled, do some faking
-	  static int zerosent = 0;
 	  if(a == Pico.m.z80_lastaddr) { // probably polling something
-        d = Pico.m.z80_fakeval;
-		if((d & 0xf) == 0xf && !zerosent) {
-		  d = 0; zerosent = 1;
-        } else {
-		  Pico.m.z80_fakeval++;
-		  zerosent = 0;
-		}
+		d = Pico.m.z80_fakeval++;
         goto end;
-	  } else {
-        Pico.m.z80_fakeval = 0;
 	  }
-
+      Pico.m.z80_fakeval = 0;
 	  Pico.m.z80_lastaddr = (u16) a;
 	}
-
     // Z80 ram (not byteswaped)
-    d=(Pico.zram[a]<<8)|Pico.zram[a+1];
-
+    d=(Pico.zram[a]<<8)|Pico.zram[a+1];	
     goto end;
   }
-
   if ((a&0xfffffc)==0xa04000) { 
 #ifdef ARM9_SOUND
 	  if(PicoOpt&1) 
@@ -191,7 +165,7 @@ static u32 OtherRead16(u32 a)
 end:
   return d;
 }
-
+*/
 static void OtherWrite8(u32 a,u32 d)
 {
   if (a==0xc00011||a==0xa07F11){ 
@@ -203,7 +177,9 @@ static void OtherWrite8(u32 a,u32 d)
 
   if ((a&0xffc000)==0xa00000)  { // Z80 ram
 	Pico.zram[a&0x1fff]=(u8)d;
+#ifdef ARM9_SOUND
 	SoundPlayZ80();
+#endif
 	return;
   }
   if ((a&0xfffffc)==0xa04000)  { 
@@ -344,6 +320,8 @@ static void OtherWrite16(u32 a,u32 d)
 // -----------------------------------------------------------------
 //                     Read Rom and read Ram
 
+extern "C" u8 CPU_CALL PicoRead8(u32 a);
+/*
 static u8 CPU_CALL PicoRead8(u32 a)
 {
   u32 d=0;
@@ -367,7 +345,9 @@ static u8 CPU_CALL PicoRead8(u32 a)
 #endif
   return (u8)d;
 }
-
+*/
+extern "C" u16 CPU_CALL PicoRead16(u32 a);
+/*
 u16 CPU_CALL PicoRead16(u32 a)
 {
   u16 d=0;
@@ -391,7 +371,10 @@ u16 CPU_CALL PicoRead16(u32 a)
 #endif
   return d;
 }
+*/
 
+extern "C" u32 CPU_CALL PicoRead32(u32 a);
+/*
 u32 CPU_CALL PicoRead32(u32 a)
 {
   u32 d=0;
@@ -415,7 +398,7 @@ u32 CPU_CALL PicoRead32(u32 a)
 #endif
   return d;
 }
-
+*/
 // -----------------------------------------------------------------
 //                            Write Ram
 
@@ -613,4 +596,3 @@ void z80_write16(unsigned short data, unsigned short a)
   z80_write((unsigned char) data,a);
   z80_write((unsigned char)(data>>8),(u16)(a+1));
 }
-

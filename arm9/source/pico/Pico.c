@@ -41,6 +41,7 @@ struct Pico Pico;
 // int PicoOpt=0x1f; // stereo sound
 int PicoOpt = VIDEO_OPT | SOUND_OPT;
 int PicoSkipFrame=0; // skip rendering frame?
+static int cycles_68k_vblank,cycles_z80_vblank,cycles_68k_block,cycles_z80_block,cycles_z80_line,z80lines;
 
 // notaz: sram
 struct PicoSRAM SRam;
@@ -294,17 +295,19 @@ static int PicoFrameHints()
 // Simple frame without H-Ints
 static int PicoFrameSimple()
 {
-  int total=0,total_z80=0,aim=0,aim_z80=0,y=0,z80lines=0,z80line=0,sects;
-  int cycles_68k_vblank,cycles_z80_vblank,cycles_68k_block,cycles_z80_block,cycles_z80_line;
+#ifdef ARM9_SOUND
+  int total_z80=0,aim_z80=0,z80line=0;
+#endif
+  int total,aim,y,sects;
 
-  if(Pico.m.pal) {
+  if(Pico.m.pal && z80lines!=88) {
     cycles_68k_vblank = (int) ((double) OSC_PAL  /  7 / 50 / 312 + 0.4) * 88;
 	cycles_z80_vblank = (int) ((double) OSC_PAL  / 15 / 50 / 312 + 0.4) * 88;
     cycles_68k_block  = (int) ((double) OSC_PAL  /  7 / 50 / 312 + 0.4) * 14;
 	cycles_z80_block  = (int) ((double) OSC_PAL  / 15 / 50 / 312 + 0.4) * 14;
 	cycles_z80_line   = (int) ((double) OSC_PAL  / 15 / 50 / 312 + 0.4);
 	z80lines = 88;
-  } else {
+  } else if (!Pico.m.pal && z80lines!=38) {
     cycles_68k_vblank = (int) ((double) OSC_NTSC /  7 / 60 / 262 + 0.4) * 38; // 7790
 	cycles_z80_vblank = (int) ((double) OSC_NTSC / 15 / 60 / 262 + 0.4) * 38;
     cycles_68k_block  = (int) ((double) OSC_NTSC /  7 / 60 / 262 + 0.4) * 14;
@@ -312,15 +315,6 @@ static int PicoFrameSimple()
 	cycles_z80_line   = (int) ((double) OSC_NTSC / 15 / 60 / 262 + 0.4); // 228
 	z80lines = 38;
   }
- 
-  /* 
-  cycles_68k_vblank = (int) ((double) OSC_NTSC /  7 / 60 / 262 + 0.4) * 19; // 7790
-  cycles_z80_vblank = (int) ((double) OSC_NTSC / 15 / 60 / 262 + 0.4) * 19;
-  cycles_68k_block  = (int) ((double) OSC_NTSC /  7 / 60 / 262 + 0.4) * 7;
-  cycles_z80_block  = (int) ((double) OSC_NTSC / 15 / 60 / 262 + 0.4) * 7;
-  cycles_z80_line   = (int) ((double) OSC_NTSC / 15 / 60 / 262 + 0.4); // 228
-  z80lines = 38;
-  */
 
   Pico.m.scanline=-100;
 
@@ -368,23 +362,21 @@ static int PicoFrameSimple()
 	if (CheckIdle()) break;
 
     total+=SekRun(aim-total);
+#ifdef ARM9_SOUND
 	if((PicoOpt&4) && Pico.m.z80Run) {
 	  if(PicoOpt&1) {
-#ifdef ARM9_SOUND
 	    z80lines += 14; // 14 lines per section
 	    for(; z80line < z80lines; z80line++) {
 	      aim_z80+=cycles_z80_line;
           total_z80+=z80_run(aim_z80-total_z80);
 	      sound_timers_and_dac(z80line);
 	    }
-#endif
       } else {
         aim_z80+=cycles_z80_block;
-#ifdef ARM9_SOUND
         total_z80+=z80_run(aim_z80-total_z80);
-#endif
       }
 	}
+#endif
   }
 
 #ifdef ARM9_SOUND

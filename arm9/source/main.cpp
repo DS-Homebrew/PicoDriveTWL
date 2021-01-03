@@ -1,7 +1,7 @@
 #define DEBUG 0
 #define V_OFFSET 12
 #define H_OFFSET 8
-#define MAX_FRAMESKIP 4
+#define MAX_FRAMESKIP 2
 #define DESIRED_FPS 60
 
 #include <nds.h>
@@ -52,10 +52,11 @@ FILE *romfile;
 
 int choosingfile = 1;
 
-u32 dsFrameCount = 0;
+int dsFrameCount = 0;
 u32 pdFrameCount = 0;
-u32 FPS = 0;
-int frameCountForFrameSkip = 0;
+int FPS = 0;
+int frameCountForFrameSkip = 1;
+unsigned char palette_done = 0;
 
 //static u32 xdxval = 320;
 //static u32 ydyval = 300;
@@ -65,16 +66,15 @@ static bool width256 = false;
 static bool currentWidth = false;
 
 #if defined(SW_FRAME_RENDERER) || defined(SW_SCAN_RENDERER)
-static unsigned short cram_high[0x40];
+unsigned short cram_high[0x40];
 
+extern "C" void UpdatePalette();
+/*
 void UpdatePalette()
 {
-  int c=0;
-
-  // Update palette:
-  for (c=0;c<64;c++) cram_high[c]=(unsigned short)PicoCram(Pico.cram[c]);
-  Pico.m.dirtyPal=0;
+  for (int c=0;c<64;c++) cram_high[c]=(unsigned short)PicoCram(Pico.cram[c]);
 }
+*/
 #endif
 
 /*void bgupdate()
@@ -679,34 +679,41 @@ static int DoFrame()
 
 	scanKeys();
 	int keysPressed = keysHeld();
-	int kd = keysDown();
+	if (keysPressed){
+		int kd = keysDown();
+		if (keysPressed & KEY_UP) pad|=0x1;
+		else if (keysPressed & KEY_DOWN) pad|=0x2;
+		if (keysPressed & KEY_LEFT) pad|=0x4;
+		else if (keysPressed & KEY_RIGHT) pad|=0x8;
+		if (keysPressed & KEY_B) pad|=0x10;
+		if (keysPressed & KEY_A) pad|=0x20;
+		if (keysPressed & KEY_Y) pad|=0x40;
+		if (keysPressed & KEY_START) pad|=0x80;
 
-	if (keysPressed & KEY_UP) pad|=1<<0;
-	if (keysPressed & KEY_DOWN) pad|=1<<1;
-	if (keysPressed & KEY_LEFT) pad|=1<<2;
-	if (keysPressed & KEY_RIGHT) pad|=1<<3;
-	if (keysPressed & KEY_B) pad|=1<<4;
-	if (keysPressed & KEY_A) pad|=1<<5;
-	if (keysPressed & KEY_Y) pad|=1<<6;
-	if (keysPressed & KEY_START) pad|=1<<7;
-
-	if (keysPressed & KEY_X) {
-		SaveStateMenu();
-	}
-
-	if ((keysPressed & KEY_R) && (scalemode == 1)) {
-		ChangeScreenPosition();
-	}
-
-	if (keysPressed & KEY_L) {
-		if(kd & KEY_L) {
-			scalemode = (scalemode + 1) % 2;
-			ChangeScaleMode();
+		if (keysPressed & KEY_X) {
+			lcdSwap();	//Mod for GBMacro
+			SaveStateMenu();
+			lcdSwap();	//Mod for GBMacro
 		}
-	}
-	
-	if (kd & KEY_SELECT) {
-		choosingfile = 2;
+
+		if ((keysPressed & KEY_R) && (scalemode == 1)) {
+			ChangeScreenPosition();
+		}
+
+		if (keysPressed & KEY_L) {
+			if(kd & KEY_L) {
+				scalemode = (scalemode + 1) % 2;
+				ChangeScaleMode();
+			}
+		}
+		
+		if (kd & KEY_SELECT) {
+			choosingfile = 2;
+		}
+		
+		if (kd & KEY_TOUCH){
+			lcdSwap();
+		}
 	}
 
 	PicoPad[0]=pad;
@@ -749,7 +756,7 @@ static int EmulateScanBG3(unsigned int scan,unsigned short *sdata)
 		sdata[i] = PicoCram(((u16*)sdata)[i]);
 	}
 	*/
-	dmaCopy(sdata,BG_GFX+(512*scan),320*2);
+	dmaCopyWords(3,sdata,BG_GFX+(512*scan),640);
 	// memcpy(BG_GFX+(512*scan),sdata,320);
 	// dmaCopy(sdata,VRAM_A_MAIN_BG_0x6000000+(512*scan),320*2);
 	/*
@@ -808,16 +815,12 @@ static int EmulateScan(unsigned int scan,unsigned short *sdata)
 
 static int DrawFrame()
 {
-	if(DEBUG)
-		iprintf("HIT DRAWFRAME\n");
-
 	// Now final frame is drawn:
 #ifdef SW_FRAME_RENDERER
 	framebuff = realbuff;
 #endif
 
 #ifdef SW_SCAN_RENDERER
-	UpdatePalette();
 	PicoScan=EmulateScanBG3; // Setup scanline callback
 #endif
 
@@ -831,13 +834,9 @@ static int DrawFrame()
 	}
 #endif
 
-#ifdef SW_SCAN_RENDERER
-	PicoScan=NULL;
-#endif
-
-	frameCountForFrameSkip -= 2;
-	if (frameCountForFrameSkip < 0) frameCountForFrameSkip = 0;
-	pdFrameCount++;
+//	frameCountForFrameSkip -= 2;
+//	if (frameCountForFrameSkip < 0) frameCountForFrameSkip = 0;
+//	pdFrameCount++;
 	return 0;
 }
 
@@ -849,25 +848,24 @@ void EmulateFrame()
 		// swiDelay(100000);
 		return;
 	}
-
-	if(DEBUG)
-		iprintf("HIT EMULATEFRAME\n");
-
-	// iprintf("\x1b[19;0HFPS: %d     \n",FPS);
-
-	for (int i=0;i<=frameCountForFrameSkip;i++) {
-		PicoSkipFrame = 1;
-		DoFrame(); // Frame skip if needed
-		// if(PsndOut)
-		//		playSound(&picosound);
+	//Check if this frame should be skipped or not
+	//for (int i=0;i<frameCountForFrameSkip;i++) {
+	if (FPS < dsFrameCount){
+		for(int i=0;i<MAX_FRAMESKIP;i++){	
+			if (FPS == dsFrameCount-1) break;
+			PicoSkipFrame = 1;
+			DoFrame(); // Frame skip if needed
+			FPS++;
+		}
+		
+		PicoSkipFrame = 0;
+		DoFrame();
+		FPS++;
+	}else{
+		//Let's take advantage of the extra frames
+		UpdatePalette();
+		palette_done = 1;
 	}
-	PicoSkipFrame = 0;
-
-	DrawFrame();
-
-	if(DEBUG)
-		iprintf("LEAVING EMULATEFRAME\n");
-
 	return;
 }
 
@@ -878,32 +876,24 @@ void processtimer()
 
 void processvcount()
 {
-	if(!choosingfile) {
-		frameCountForFrameSkip++;
-		if (frameCountForFrameSkip > MAX_FRAMESKIP) {
-			frameCountForFrameSkip = 0;
-		}
-	} else {
-		frameCountForFrameSkip = 0;
-	}
+	
 }
 
 void processvblank()
 {
 	if(!choosingfile) {
 		dsFrameCount++;
-		// FPS = pdFrameCount;
-		// FPS = ((float)pdFrameCount / (float)dsFrameCount)*60;
-		// FPS = (60.0/(float)dsFrameCount)*pdFrameCount;
-		if(dsFrameCount > 59) {
-			FPS = pdFrameCount;
-			pdFrameCount = dsFrameCount = 0;
-		}
-		else if((60 % dsFrameCount) == 0) {
-			FPS = (60/dsFrameCount)*pdFrameCount;
-		}
-		//  EmulateFrame();
 		dosVibrate();
+		if (dsFrameCount == 60){
+			iprintf("\x1b[19;0HFPS: %i     \n",FPS);
+			FPS = 0;
+			dsFrameCount = 0;
+			if (palette_done) palette_done = 0;
+			else 			  UpdatePalette();
+		}else if(dsFrameCount == 15 || dsFrameCount == 30 || dsFrameCount == 45) {
+			if (palette_done) palette_done = 0;
+			else 			  UpdatePalette();
+		}
 	} else {
 		if (currentWidth != width256) {
 			if (scalemode != 1) ChangeScaleMode();
@@ -979,8 +969,8 @@ void LidHandler() {
 void InitInterruptHandler()
 {
 	//irqInit();
-	irqSet(IRQ_VCOUNT, processvcount);
-	irqEnable(IRQ_VCOUNT);
+	//irqSet(IRQ_VCOUNT, processvcount);
+	//irqEnable(IRQ_VCOUNT);
 	irqSet(IRQ_VBLANK, processvblank);
 	irqEnable(IRQ_VBLANK);
 	// irqSet(IRQ_LID, LidHandler);
@@ -1041,13 +1031,14 @@ int EmulateExit()
 
 		// Remove cartridge
 		PicoCartInsert(NULL,0);
+		
 		if (RomData && !UsingAppendedRom && !UsingExtendedMemory) {
-			free(RomData); RomData=NULL; RomSize=0;
+			//free(RomData); //PROBLEM!!!!
+			RomData=NULL; RomSize=0;
 		}
 		else if(RomData && UsingExtendedMemory) {
 			RomData=NULL; RomSize=0;
 		}
-
 		PicoExit();
 		return 1;
 	}
@@ -1061,7 +1052,7 @@ void LoadROMToMemory(uint16* location, int size)
 	size=(size+3)&~3; // Round up to a multiple of 4
 	
 	fseek(romfile,0,SEEK_SET);
-	fread(location,1,0x400000,romfile);
+	fread(location,1,size,romfile);
 	fclose(romfile);
 	
 	// Check for SMD:
@@ -1268,8 +1259,6 @@ int main(int argc, char **argv)
 {
 	defaultExceptionHandler();
 
-	bool fatInited = fatInitDefault();
-
 	// ClearMemory();
 	//resetMemory2_ARM9();
 	//powerOn(POWER_ALL);
@@ -1303,6 +1292,7 @@ int main(int argc, char **argv)
 #ifdef SW_SCAN_RENDERER
 	REG_BG3CNT = BG_BMP16_512x256;
 	PicoCramHigh = cram_high;
+	PicoScan=EmulateScanBG3; // Setup scanline callback
 #endif
 
 #ifdef HW_FRAME_RENDERER
@@ -1362,8 +1352,6 @@ int main(int argc, char **argv)
 
 	fifoSendValue32(FIFO_PM, PM_REQ_SLEEP_DISABLE);		// Disable sleep mode to prevent crashes
 
-	// lcdSwap();
-
 	// SoundInit();
 
 	InitInterruptHandler();
@@ -1379,8 +1367,12 @@ int main(int argc, char **argv)
 	
 
 
-	if(fatInited) {
+	if(fatInitDefault()) {
 		iprintf("\x1b[2J");
+		
+		if(chdir("/md/")){
+			chdir("/");
+		}
 
 		if (argc > 1) {
 			romfile=fopen(argv[1], "rb");
@@ -1468,7 +1460,6 @@ int main(int argc, char **argv)
 		}
 		iprintf("\x1b[17;0HBytes/128: %d              ",mallCount);
 		*/
-
 		EmulateFrame();
 		if (!soundPaused) snd().updateStream();
 		// Save SRAM

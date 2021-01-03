@@ -21,7 +21,7 @@ unsigned short HighCol[32+320+8]; // Gap for 32 column, and messy border on righ
 static int HighCacheA[41+1]; // caches for high layers
 static int HighCacheB[41+1];
 static int HighCacheS[80+1]; // and sprites
-static int rendstatus; // &1: sprite masking mode 2
+int rendstatus; // &1: sprite masking mode 2
 int Scanline=0; // Scanline
 
 
@@ -46,7 +46,8 @@ void DrawSpritesFromCache(int *hc);
 void DrawLayer(int plane, int *hcache, int maxcells);
 #endif
 
-
+int TileNorm(unsigned short *pd,int addr,unsigned short *pal);
+/*
 static int TileNorm(unsigned short *pd,int addr,unsigned short *pal)
 {
   unsigned int pack=0; unsigned int t=0;
@@ -67,7 +68,10 @@ static int TileNorm(unsigned short *pd,int addr,unsigned short *pal)
 
   return 1; // Tile blank
 }
+*/
 
+int TileFlip(unsigned short *pd,int addr,unsigned short *pal);
+/*
 static int TileFlip(unsigned short *pd,int addr,unsigned short *pal)
 {
   unsigned int pack=0; unsigned int t=0;
@@ -87,8 +91,11 @@ static int TileFlip(unsigned short *pd,int addr,unsigned short *pal)
   }
   return 1; // Tile blank
 }
+*/
 
 #ifndef _ASM_DRAW_C
+//void DrawStrip(struct TileStrip *ts);
+
 static void DrawStrip(struct TileStrip *ts)
 {
   int tilex=0,dx=0,ty=0,code=0,addr=0,cells;
@@ -131,6 +138,7 @@ static void DrawStrip(struct TileStrip *ts)
   // terminate the cache list
   *ts->hc = 0;
 }
+
 #endif
 
 // this is messy
@@ -333,6 +341,8 @@ static void DrawTilesFromCache(int *hc)
   }
 }
 
+void DrawSprite(unsigned int *sprite,int **hc);
+/*
 static void DrawSprite(unsigned int *sprite,int **hc)
 {
   int width=0,height=0;
@@ -379,9 +389,11 @@ static void DrawSprite(unsigned int *sprite,int **hc)
     }
   }
 }
+*/
 #endif
 
-
+int DrawAllSprites(int *hcache, int maxwidth);
+/*
 static int DrawAllSprites(int *hcache, int maxwidth)
 {
   struct PicoVideo *pvid=&Pico.video;
@@ -394,8 +406,7 @@ static int DrawAllSprites(int *hcache, int maxwidth)
   if (pvid->reg[12]&1) table&=0x7e; // Lowest bit 0 in 40-cell mode
   table<<=8; // Get sprite table address/2
 
-  for (i=u=0; u < 80 && i < 21; u++)
-  {
+	for (i=u=0; u < 80; u++){
     unsigned int *sprite=NULL;
     int code, sx, sy, height;
 
@@ -411,16 +422,18 @@ static int DrawAllSprites(int *hcache, int maxwidth)
 
     // masking sprite?
 	sx = (sprite[1]>>16)&0x1ff;
-	if(!sx) {
-      if(!(rendstatus&1) || (!(rendstatus&1) && sx1seen)) {
+	
+	if(sx==0) {
+		if(rendstatus==0) {
         i--; break; // this sprite is not drawn and remaining sprites are masked
 	  }
 	}
-    else if(sx == 1) { rendstatus |= 1; sx1seen = 1; } // masking mode2 (Outrun, Galaxy Force II)
+    //else if(sx == 1) { rendstatus |= 1; sx1seen = 1; } // masking mode2 (Outrun, Galaxy Force II)
+	else if(sx == 1) rendstatus = 1; // masking mode2 (Outrun, Galaxy Force II)
 
     // check if sprite is not hidden offscreen
 	sx -= 0x78; // Get X coordinate + 8
-	if(sx <= -8*3 || sx >= maxwidth) goto nextsprite;
+	if(sx <= -24 || sx >= maxwidth) goto nextsprite;
 
 	// sprite is good, save it's index
 	spin[i++]=(unsigned char)link;
@@ -445,9 +458,10 @@ static int DrawAllSprites(int *hcache, int maxwidth)
 
   return 0;
 }
-
-
+*/
 #ifndef _ASM_DRAW_C
+//void DrawSpritesFromCache(int *hc);
+
 static void DrawSpritesFromCache(int *hc)
 {
   int code, tile, sx, delta, width;
@@ -477,7 +491,8 @@ static void DrawSpritesFromCache(int *hc)
   }
 }
 
-
+void BackFill(int reg7);
+/*
 static void BackFill(int reg7)
 {
   unsigned int back=0;
@@ -494,6 +509,7 @@ static void BackFill(int reg7)
   //do { pd[0]=pd[1]=pd[2]=pd[3]=back; pd+=4; } while (pd<end);
   dmaFillWords(back, pd, 320*2);
 }
+*/
 #endif
 
 static int DrawDisplay()
@@ -573,15 +589,15 @@ int PicoLine(int scan)
   //if (Pico.video.reg[12]&1)
   //{
     Skip=PicoScan(Scanline,HighCol+32); // 40-column mode
-  /*}
-  else
-  {
+  //}
+  //else
+  //{
     // Crop, centre and return 32-column mode
 	// notaz: this is not needed here, it is done later
     //memset(HighCol,    0,64); // Left border
     //memset(HighCol+288,0,64); // Right border
-    Skip=PicoScan(Scanline,HighCol);
-  }*/
+  //  Skip=PicoScan(Scanline,HighCol);
+  //}
 
   return 0;
 }
