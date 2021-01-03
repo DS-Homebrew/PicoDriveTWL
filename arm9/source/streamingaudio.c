@@ -1,8 +1,6 @@
 #include "streamingaudio.h"
 #include "tonccpy.h"
 
-extern char romSpace[0x280000];
-
 // Private members
 
 /* Not a actual pointer, but the index to the current location of the 
@@ -16,8 +14,8 @@ volatile s32 streaming_buf_ptr = 0;
 volatile s32 filled_samples = 0;
 
 // Pointers to the stream buffers.
-volatile s16* play_stream_buf = (s16*)((char*)romSpace+0x200000);
-volatile s16* fill_stream_buf = (s16*)0x02E00000;
+volatile s16* play_stream_buf = (s16*)0x02E00000;
+volatile s16* fill_stream_buf = (s16*)0x02F00000;
 
 
 // Toggle this to true to trigger a fill as soon as possible.
@@ -36,8 +34,8 @@ void resetStreamSettings() {
 	streaming_buf_ptr = 0;
 	filled_samples = 0;
 
-	play_stream_buf = (s16*)((char*)romSpace+0x200000);
-	fill_stream_buf = (s16*)0x02E00000;
+	play_stream_buf = (s16*)0x02E00000;
+	fill_stream_buf = (s16*)0x02F00000;
 
 
 	fill_requested = false;

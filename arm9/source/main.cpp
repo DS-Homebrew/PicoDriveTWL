@@ -1088,7 +1088,7 @@ int EmulateInit()
 			if (isDSiMode()) {
 				UsingExtendedMemory = true;
 				LoadROMToMemory((uint16*)0x02A00000,i);
-			} else if(i >= 0x284000) {
+			} else if(i >= 0x304000) {
 				sysSetCartOwner(BUS_OWNER_ARM9);
 				struct stat st;
 				stat("/",&st);
@@ -1368,6 +1368,9 @@ int main(int argc, char **argv)
 
 
 	if(fatInitDefault()) {
+		extern char* romSpace;
+		romSpace = new char[isDSiMode() ? 0x200000 : 0x304000];	// Allocate space for the ROM, or ROM bank cache
+
 		iprintf("\x1b[2J");
 		
 		if(chdir("/md/")){

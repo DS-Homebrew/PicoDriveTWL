@@ -5,7 +5,7 @@
 
 #define cacheAmount 4
 
-extern char romSpace[0x284000];
+extern char* romSpace;
 
 char fileName[256];
 

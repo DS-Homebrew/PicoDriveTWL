@@ -8,7 +8,7 @@
 
 
 #include "PicoInt.h"
-char romSpace[0x284000];
+char* romSpace;
 
 void Byteswap(unsigned char *data,int len)
 {
