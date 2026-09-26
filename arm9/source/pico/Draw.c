@@ -46,9 +46,9 @@ void DrawSpritesFromCache(int *hc);
 void DrawLayer(int plane, int *hcache, int maxcells);
 #endif
 
-int TileNorm(unsigned short *pd,int addr,unsigned short *pal);
-/*
-static int TileNorm(unsigned short *pd,int addr,unsigned short *pal)
+//int TileNorm(unsigned short *pd,int addr,unsigned short *pal);
+
+ITCM_CODE int TileNorm(unsigned short *pd,int addr,unsigned short *pal)
 {
   unsigned int pack=0; unsigned int t=0;
 
@@ -68,11 +68,10 @@ static int TileNorm(unsigned short *pd,int addr,unsigned short *pal)
 
   return 1; // Tile blank
 }
-*/
 
-int TileFlip(unsigned short *pd,int addr,unsigned short *pal);
-/*
-static int TileFlip(unsigned short *pd,int addr,unsigned short *pal)
+//int TileFlip(unsigned short *pd,int addr,unsigned short *pal);
+
+ITCM_CODE int TileFlip(unsigned short *pd,int addr,unsigned short *pal)
 {
   unsigned int pack=0; unsigned int t=0;
 
@@ -91,12 +90,11 @@ static int TileFlip(unsigned short *pd,int addr,unsigned short *pal)
   }
   return 1; // Tile blank
 }
-*/
 
 #ifndef _ASM_DRAW_C
 //void DrawStrip(struct TileStrip *ts);
 
-static void DrawStrip(struct TileStrip *ts)
+static ITCM_CODE void DrawStrip(struct TileStrip *ts)
 {
   int tilex=0,dx=0,ty=0,code=0,addr=0,cells;
   int oldcode=-1,blank=-1; // The tile we know is blank
@@ -145,7 +143,7 @@ static void DrawStrip(struct TileStrip *ts)
 #ifndef _ASM_DRAW_C
 static
 #endif
-void DrawStripVSRam(struct TileStrip *ts, int plane)
+ITCM_CODE void DrawStripVSRam(struct TileStrip *ts, int plane)
 {
   int tilex=0,dx=0,ty=0,code=0,addr=0,cell=0,nametabadd=0;
   int oldcode=-1,blank=-1; // The tile we know is blank
@@ -207,7 +205,7 @@ void DrawStripVSRam(struct TileStrip *ts, int plane)
 }
 
 #ifndef _ASM_DRAW_C
-static void DrawLayer(int plane, int *hcache, int maxcells)
+static ITCM_CODE void DrawLayer(int plane, int *hcache, int maxcells)
 {
   struct PicoVideo *pvid=&Pico.video;
   static char shift[4]={5,6,6,7}; // 32,64 or 128 sized tilemaps
@@ -258,7 +256,7 @@ static void DrawLayer(int plane, int *hcache, int maxcells)
 
 
 // tstart & tend are tile pair numbers
-static void DrawWindow(int tstart, int tend, int prio) // int *hcache
+static ITCM_CODE void DrawWindow(int tstart, int tend, int prio) // int *hcache
 {
   struct PicoVideo *pvid=&Pico.video;
   int tilex=0,ty=0,nametab,code=0;
@@ -462,7 +460,7 @@ static int DrawAllSprites(int *hcache, int maxwidth)
 #ifndef _ASM_DRAW_C
 //void DrawSpritesFromCache(int *hc);
 
-static void DrawSpritesFromCache(int *hc)
+static ITCM_CODE void DrawSpritesFromCache(int *hc)
 {
   int code, tile, sx, delta, width;
   unsigned short *pal;
@@ -512,7 +510,7 @@ static void BackFill(int reg7)
 */
 #endif
 
-static int DrawDisplay()
+static ITCM_CODE int DrawDisplay()
 {
   struct PicoVideo *pvid=&Pico.video;
   int win=0,edge=0,hwind=0,vwind=0;
@@ -568,7 +566,7 @@ static int DrawDisplay()
 
 static int Skip=0;
 
-int PicoLine(int scan)
+ITCM_CODE int PicoLine(int scan)
 {
   if(!scan) {
     // very first line - reset some stuff

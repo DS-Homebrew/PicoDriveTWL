@@ -11,89 +11,89 @@
 @	FUNCTIONS RELATED TO DIFFERENT STUFF (PICO.C, MAIN.CPP, VIDEOPORT.C, DRAW.C)
 @	TO DO: ORGANISE THEM IN DIFFERENT .S FILES
 @---------------------------------------------------------------------------------------------------
-.global TileNorm		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
-.type TileNorm, %function
-TileNorm:
-	stmfd   sp!, {r4, lr}			
-	ldr     r3, =(Pico+0x10000)		@Pico.vram
-	lsl     r1, r1, #1
-	add		r3, r3, r1
-	ldr     r4, [r3]				@r4 now has pack
-	cmp     r4, #0
-	beq     .endifblank
-	mov		r3, #0x1E				@ 00011110
-    ands    r1, r3, r4, lsr #11 @ #0x0000f000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0]
-    ands    r1, r3, r4, lsr #7  @ #0x00000f00
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#2]
-    ands    r1, r3, r4, lsr #3  @ #0x000000f0
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#4]
-    ands    r1, r3, r4, lsl #1  @ #0x0000000f
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#6]
-    ands    r1, r3, r4, lsr #27 @ #0xf0000000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#8]
-    ands    r1, r3, r4, lsr #23 @ #0x0f000000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#10]
-    ands    r1, r3, r4, lsr #19 @ #0x00f00000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#12]
-    ands    r1, r3, r4, lsr #15 @ #0x000f0000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#14]
-	mov     r0, #0				@r0 contains OK return value
-	ldmfd   sp!, {r4, pc}
-.endifblank:
-	mov     r0, #1				@r0 contains BLANK return value
-	ldmfd   sp!, {r4, pc}
+@.global TileNorm		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
+@.type TileNorm, %function
+@TileNorm: @ broken
+@	stmfd   sp!, {r4, lr}			
+@	ldr     r3, =(Pico+0x10000)		@Pico.vram
+@	lsl     r1, r1, #1
+@	add		r3, r3, r1
+@	ldr     r4, [r3]				@r4 now has pack
+@	cmp     r4, #0
+@	beq     .endifblank
+@	mov		r3, #0x1E				@ 00011110
+@    ands    r1, r3, r4, lsr #11 @ #0x0000f000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0]
+@    ands    r1, r3, r4, lsr #7  @ #0x00000f00
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#2]
+@    ands    r1, r3, r4, lsr #3  @ #0x000000f0
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#4]
+@    ands    r1, r3, r4, lsl #1  @ #0x0000000f
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#6]
+@    ands    r1, r3, r4, lsr #27 @ #0xf0000000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#8]
+@    ands    r1, r3, r4, lsr #23 @ #0x0f000000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#10]
+@    ands    r1, r3, r4, lsr #19 @ #0x00f00000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#12]
+@    ands    r1, r3, r4, lsr #15 @ #0x000f0000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#14]
+@	mov     r0, #0				@r0 contains OK return value
+@	ldmfd   sp!, {r4, pc}
+@.endifblank:
+@	mov     r0, #1				@r0 contains BLANK return value
+@	ldmfd   sp!, {r4, pc}
 	
 @------------------------------------------------------------------------
-.global TileFlip		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
-.type TileFlip, %function
-TileFlip:
-	stmfd   sp!, {r4, lr}			
-	ldr     r3, =(Pico+0x10000)		@Pico.vram
-	lsl     r1, r1, #1
-	add		r3, r3, r1
-	ldr     r4, [r3]				@r4 now has pack
-	cmp     r4, #0
-	beq     .endifblank2
-	mov		r3, #0x1E				@ 00011110
-    ands    r1, r3, r4, lsr #15 @ #0x000f0000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0]
-	ands    r1, r3, r4, lsr #19 @ #0x00f00000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#2]
-	ands    r1, r3, r4, lsr #23 @ #0x0f000000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#4]
-	ands    r1, r3, r4, lsr #27 @ #0xf0000000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#6]
-	ands    r1, r3, r4, lsl #1  @ #0x0000000f
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#8]
-	ands    r1, r3, r4, lsr #3  @ #0x000000f0
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#10]
-	ands    r1, r3, r4, lsr #7  @ #0x00000f00
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#12]
-	ands    r1, r3, r4, lsr #11 @ #0x0000f000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0, #14]
-	mov     r0, #0				@r0 contains OK return value
-	ldmfd   sp!, {r4, pc}
-.endifblank2:
-	mov     r0, #1				@r0 contains BLANK return value
-	ldmfd   sp!, {r4, pc}
-		
+@.global TileFlip		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
+@.type TileFlip, %function
+@TileFlip: @ broken?
+@	stmfd   sp!, {r4, lr}			
+@	ldr     r3, =(Pico+0x10000)		@Pico.vram
+@	lsl     r1, r1, #1
+@	add		r3, r3, r1
+@	ldr     r4, [r3]				@r4 now has pack
+@	cmp     r4, #0
+@	beq     .endifblank2
+@	mov		r3, #0x1E				@ 00011110
+@    ands    r1, r3, r4, lsr #15 @ #0x000f0000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0]
+@	ands    r1, r3, r4, lsr #19 @ #0x00f00000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#2]
+@	ands    r1, r3, r4, lsr #23 @ #0x0f000000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#4]
+@	ands    r1, r3, r4, lsr #27 @ #0xf0000000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#6]
+@	ands    r1, r3, r4, lsl #1  @ #0x0000000f
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#8]
+@	ands    r1, r3, r4, lsr #3  @ #0x000000f0
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#10]
+@	ands    r1, r3, r4, lsr #7  @ #0x00000f00
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#12]
+@	ands    r1, r3, r4, lsr #11 @ #0x0000f000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0, #14]
+@	mov     r0, #0				@r0 contains OK return value
+@	ldmfd   sp!, {r4, pc}
+@.endifblank2:
+@	mov     r0, #1				@r0 contains BLANK return value
+@	ldmfd   sp!, {r4, pc}
+
 @-----------------------------------------------------------------------------------------------------
 .global BackFill @ reg7 (r0)
 .type BackFill, %function
