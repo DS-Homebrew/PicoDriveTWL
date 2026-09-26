@@ -3,11 +3,13 @@
 .extern PicoPad
 .extern PicoOpt
 .extern SRam
+.arm
 
 @-----------------------------------------------------------------------------------------------------
 @	ALL FUNCTIONS RELATED TO MEMORY.C
 @-----------------------------------------------------------------------------------------------------
 .global PicoCheckPc				@ pc (r0)
+.type PicoCheckPc, %function
 PicoCheckPc:
 	ldr		r3, =(PicoCpu+0x60)	@r3 = &PicoCpu.membase
 	ldr		r1, [r3]			@r1 = PicoCpu.membase (value)
@@ -31,6 +33,7 @@ PicoCheckPc:
 	
 @---------------------------------------------------------------------------
 .global PadRead			@int i (r0)
+.type PadRead, %function
 PadRead:
 	stmfd   sp!, {r4,lr}
 	mov		r4, r0						@backup of r0
@@ -91,6 +94,7 @@ PadRead:
 
 @---------------------------------------------------------------------------
 .global OtherRead16						@ unsigned int a (r0)
+.type OtherRead16, %function
 OtherRead16:
 	stmfd   sp!, {r1-r4,lr}
 	ldr		r3, =0xffc000
@@ -203,6 +207,7 @@ OtherRead16:
 
 @---------------------------------------------------------------------------
 .global PicoRead8			@unsigned int a (r0)
+.type PicoRead8, %function
 PicoRead8:
 	stmfd   sp!, {r4,lr}
 	bic     r0, r0, #-16777216
@@ -255,6 +260,7 @@ PicoRead8:
 
 @---------------------------------------------------------------------------
 .global PicoRead16			@unsigned int a (r0)
+.type PicoRead16, %function
 PicoRead16:
 	stmfd   sp!, {r4,lr}
 	bic     r0, r0, #-16777216
@@ -303,6 +309,7 @@ PicoRead16:
 	
 @---------------------------------------------------------------------------
 .global PicoRead32			@unsigned int a (r0)
+.type PicoRead32, %function
 PicoRead32:
 	stmfd   sp!, {r4,lr}
 	bic     r0, r0, #-16777216
