@@ -5,12 +5,14 @@
 .extern PicoCpu
 .extern Scanline
 .extern rendstatus
+.arm
 
 @---------------------------------------------------------------------------------------------------
 @	FUNCTIONS RELATED TO DIFFERENT STUFF (PICO.C, MAIN.CPP, VIDEOPORT.C, DRAW.C)
 @	TO DO: ORGANISE THEM IN DIFFERENT .S FILES
 @---------------------------------------------------------------------------------------------------
 .global TileNorm		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
+.type TileNorm, %function
 TileNorm:
 	stmfd   sp!, {r4, lr}			
 	ldr     r3, =(Pico+0x10000)		@Pico.vram
@@ -52,7 +54,7 @@ TileNorm:
 	
 @------------------------------------------------------------------------
 .global TileFlip		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
-
+.type TileFlip, %function
 TileFlip:
 	stmfd   sp!, {r4, lr}			
 	ldr     r3, =(Pico+0x10000)		@Pico.vram
@@ -94,6 +96,7 @@ TileFlip:
 		
 @-----------------------------------------------------------------------------------------------------
 .global BackFill @ reg7 (r0)
+.type BackFill, %function
 BackFill:
 	stmfd   sp!, {r4-r9,lr}
     mov     r0, r0, lsl #26
@@ -134,6 +137,7 @@ BackFill:
 	
 @-----------------------------------------------------------------------------------------------------
 .global UpdatePalette
+.type UpdatePalette, %function
 UpdatePalette:
 	mov		r1, #0				@r1 = while condition
 	push	{r4}
@@ -164,6 +168,7 @@ UpdatePalette:
 
 @-----------------------------------------------------------------------------------------------------
 .global DrawSprite			@unsigned int *sprite (r0), int **hc (r1)
+.type DrawSprite, %function
 DrawSprite:
 	stmfd   sp!, {r1-r9,lr}
 	ldr		r2, [r0]			@sy = sprite[0] (r2)
@@ -263,6 +268,7 @@ DrawSprite:
 
 @-----------------------------------------------------------------------------------------------------
 .global DrawAllSprites		@ int *hcache (r0), int maxwidth (r1)
+.type DrawAllSprites, %function
 DrawAllSprites:
 	stmfd   sp!, {r4-r10,lr}
 	str     fp, [sp, #-4]!
@@ -370,6 +376,7 @@ DrawAllSprites:
 @-----------------------------------------------------------------------------------------------------
 .global DrawSpritesFromCache2				@ int *hc (r0)
 DrawSpritesFromCache2:
+.type DrawSpritesFromCache2, %function
 		stmfd	sp!, {r4-r10,lr}
         mov 	r9, r0					@r9 = *hc
         b       .L2dsfc
@@ -431,6 +438,7 @@ DrawSpritesFromCache2:
 
 @-----------------------------------------------------------------------------------------------------
 .global DrawStrip2				@ TileStrip *ts (r0)		[BROKEN??]
+.type DrawStrip2, %function
 DrawStrip2:
 	stmfd   sp!, {r1-r10,lr}
 	mov 	r4, r0				@r4 = ts	[r0 is free]
@@ -519,6 +527,7 @@ DrawStrip2:
 
 @-----------------------------------------------------------------------------------------------------
 .global VideoRead
+.type VideoRead, %function
 VideoRead:
 	stmfd   sp!, {r6-r7,lr}
 	ldr		r0, =(Pico+0x2226A)
@@ -626,6 +635,7 @@ PicoVideoRead:
 
 @---------------------------------------------------------------------------
 .global VideoWrite		@ unsigned int d (r0)
+.type VideoWrite, %function
 VideoWrite:
 	stmfd   sp!, {r4,r6,lr}
 	ldr		r1, =(Pico+0x2226A)	@r1 = &pico.video.addr
@@ -681,6 +691,7 @@ VideoWrite:
 
 @---------------------------------------------------------------------------
 .global GetDmaSource
+.type GetDmaSource, %function
 GetDmaSource:
 	stmfd   sp!, {lr}
 	ldr		r1, =(Pico+0x22244)	
@@ -696,6 +707,7 @@ GetDmaSource:
 
 @---------------------------------------------------------------------------
 .global GetDmaLength
+.type GetDmaLength, %function
 GetDmaLength:
 	stmfd   sp!, {lr}
 	ldr		r1, =(Pico+0x22257)
@@ -706,6 +718,7 @@ GetDmaLength:
 
 @---------------------------------------------------------------------------
 .global DmaFill2			@int data (r0)
+.type DmaFill2, %function
 DmaFill2:
         stmfd   sp!, {r1-r10,lr}
         mov		r5, r0

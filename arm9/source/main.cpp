@@ -7,7 +7,6 @@
 #include <nds.h>
 #include <nds/bios.h>
 #include <nds/arm9/console.h>
-#include <maxmod9.h>
 #include <fat.h>
 #include <stdio.h>
 #include <sys/unistd.h>
@@ -18,8 +17,6 @@
 #include "pico/PicoInt.h"
 #include "file.h"
 #include "file_browse.h"
-#include "iniFile.h"
-#include "externSound.h"
 
 using namespace std;
 
@@ -82,145 +79,31 @@ void UpdatePalette()
 	s16 c = cosLerp(0) >> 4;
 	REG_BG3PA = ( c * (xdxval))>>8;
 	REG_BG3PD = ( c * (ydyval))>>8;
-	iprintf("\x1b[16;0Hxdxval: %d    \n",xdxval);
-	iprintf("ydyval: %d    ",ydyval);
+	printf("\x1b[16;0Hxdxval: %d    \n",xdxval);
+	printf("ydyval: %d    ",ydyval);
 }*/
 
 void PrintRegion()
 {
-	iprintf("\n");
+	printf("\n");
 	switch(Pico.m.hardware)
 	{
 		case 0xe0:
-			iprintf("Europe\n");
+			printf("Europe\n");
 			break;
 		case 0xa0:
-			iprintf("USA\n");
+			printf("USA\n");
 			break;
 		case 0x60:
-			iprintf("Japan PAL\n");
+			printf("Japan PAL\n");
 			break;
 		case 0x20:
-			iprintf("Japan NTSC\n");
+			printf("Japan NTSC\n");
 			break;
 		default:
-			iprintf("Unknown\n");
+			printf("Unknown\n");
 			break;
 	}
-}
-
-std::string mmFilePath;
-
-bool playSound = false;
-bool soundPaused = false;
-static mm_sound_effect mdSnd[48];
-mm_sfxhand sndHandlers[48];
-
-u8 musFirstID = 0;
-u8 musLastID = 0;
-
-u8 sndFirstID = 0;
-u8 sndLastID = 0;
-u8 sndStopID = 0;
-
-u8 pauseID = 0;
-u8 unpauseID = 0;
-
-u16 snd68000addr[2] = {0};
-u16 sndZ80addr[2] = {0};
-
-u16 pause68000addr = 0;
-u16 pauseZ80addr = 0;
-
-char sndFilePath[3][256] = {0};
-
-static void InitSound(const char* filename) {
-	if (!isDSiMode()) return;
-
-	snd();
-	playSound = false;
-	soundPaused = false;
-
-	sprintf(sndFilePath[0], "/_nds/PicoDriveTWL/sound/%s", filename);
-	for (int i = (int)sizeof(sndFilePath[0]); i > 0; i--) {
-		if (sndFilePath[0][i] == '.') {
-			// Replace filetype
-			sndFilePath[0][i+1] = 'i';
-			sndFilePath[0][i+2] = 'n';
-			sndFilePath[0][i+3] = 'i';
-			sndFilePath[0][i+4] = '\x00';
-			break;
-		}
-	}
-	if (access(sndFilePath[0], F_OK) != 0) return;
-	//printf(sndFilePath[0]);
-	//printf("\n");
-
-    CIniFile soundSettings(sndFilePath[0]);
-	mmFilePath = soundSettings.GetString("SOUND", "Filename", "");	// Grab filename from .ini file
-	sprintf(sndFilePath[1], "/_nds/PicoDriveTWL/sound/%s", mmFilePath.c_str());
-	//printf(sndFilePath[1]);
-	//printf("\n");
-
-	musFirstID = soundSettings.GetInt("MUSIC", "FirstID", 0);
-	musLastID = soundSettings.GetInt("MUSIC", "LastID", 0);
-
-	sndFirstID = soundSettings.GetInt("SOUND", "FirstID", 0);
-	sndLastID = soundSettings.GetInt("SOUND", "LastID", 0);
-	sndStopID = soundSettings.GetInt("SOUND", "StopID", 0);
-
-	snd68000addr[0] = soundSettings.GetInt("SOUND", "68Kaddr", 0);
-	if (snd68000addr[0] == 0) {
-		snd68000addr[0] = soundSettings.GetInt("SOUND", "68Kaddr1", 0);
-		snd68000addr[1] = soundSettings.GetInt("SOUND", "68Kaddr2", 0);
-	}
-
-	sndZ80addr[0] = soundSettings.GetInt("SOUND", "Z80addr", 0);
-	if (sndZ80addr[0] == 0) {
-		sndZ80addr[0] = soundSettings.GetInt("SOUND", "Z80addr1", 0);
-		sndZ80addr[1] = soundSettings.GetInt("SOUND", "Z80addr2", 0);
-	}
-
-	pauseID = soundSettings.GetInt("SOUND", "PauseID", 0);
-	unpauseID = soundSettings.GetInt("SOUND", "UnpauseID", 0);
-
-	pause68000addr = soundSettings.GetInt("SOUND", "Pause68Kaddr", 0);
-	pauseZ80addr = soundSettings.GetInt("SOUND", "PauseZ80addr", 0);
-
-	// Load sound bank into memory
-	FILE* soundBank = fopen(sndFilePath[1], "rb");
-
-	u32 size=0;
-	fseek(soundBank,0,SEEK_END);
-	size=ftell(soundBank);
-	fseek(soundBank,0,SEEK_SET);
-
-	if (!soundBank || size > 0x500000) return;
-	fread((void*)0x02500000, 1, 0x500000, soundBank);
-	fclose(soundBank);
-
-	mmInitDefaultMem((mm_addr)0x02500000);
-
-	for (unsigned int i = 0; i < 47; i++) {
-		mmLoadEffect(i);
-
-		mdSnd[i] = {
-			{i} ,			// id
-			(int)(1.0f * (1<<10)),	// rate
-			sndHandlers[i],		// handle
-			127,	// volume
-			127,	// panning
-		};
-	}
-
-	printf("External sound loaded!\n");
-
-	mmFilePath = soundSettings.GetString("MUSIC", "Foldername", "");	// Grab filename from .ini file
-	sprintf(sndFilePath[2], "/_nds/PicoDriveTWL/sound/%s/", mmFilePath.c_str());
-	//snd().loadStream(sndFilePath[2]);
-	//snd().beginStream();
-
-	playSound = true;
 }
 
 #ifdef ARM9_SOUND
@@ -433,7 +316,7 @@ int saveLoadGame(int load, int sram)
 		strcpy(saveFname, fileName);
 		if(saveFname[strlen(saveFname)-4] == '.') saveFname[strlen(saveFname)-4] = 0;
 		strcat(saveFname, sram ? ".srm" : ".pds");
-		// iprintf("\x1b[0;0HSavename: %s\n",saveFname);
+		// printf("\x1b[0;0HSavename: %s\n",saveFname);
 	}
 
 	if(sram) {
@@ -586,8 +469,8 @@ void ChangeScreenPosition()
 		
 		REG_BG3X = cx << 8;
 		REG_BG3Y = cy << 8;
-		// iprintf("\x1b[17;0Hcy: %d  \n",cy);
-		// iprintf("cx: %d  ",cx);
+		// printf("\x1b[17;0Hcy: %d  \n",cy);
+		// printf("cx: %d  ",cx);
 		scanKeys();
 		swiWaitForVBlank();
 	}
@@ -632,16 +515,16 @@ static int SaveStateMenu()
 
 	ConvertToGrayscale();
 	consoleClear();
-	iprintf("\x1b[1;10HLoad State");
-	iprintf("\x1b[2;10HSave State");
+	printf("\x1b[1;10HLoad State");
+	printf("\x1b[2;10HSave State");
 	while(1) {
 		if(!position) {
-			iprintf("\x1b[1;7H-> ");
-			iprintf("\x1b[2;7H   ");
+			printf("\x1b[1;7H-> ");
+			printf("\x1b[2;7H   ");
 		}
 		else {
-			iprintf("\x1b[1;7H   ");
-			iprintf("\x1b[2;7H-> ");
+			printf("\x1b[1;7H   ");
+			printf("\x1b[2;7H-> ");
 		}
 		scanKeys();
 		if((keysDown() & KEY_DOWN) || (keysDown() & KEY_UP)) {
@@ -654,15 +537,15 @@ static int SaveStateMenu()
 		if(keysDown() & KEY_A) {
 			consoleClear();
 			if(position) { // save state
-				iprintf("Saving state...");
+				printf("Saving state...");
 				saveLoadGame(0,0);
-				iprintf("DONE!\n");
+				printf("DONE!\n");
 				return 0;
 			}
 			else { // load state
-				iprintf("Loading state...");
+				printf("Loading state...");
 				saveLoadGame(1,0);
-				iprintf("DONE!");
+				printf("DONE!");
 				return 0;
 			}
 		}
@@ -673,7 +556,7 @@ static int SaveStateMenu()
 static int DoFrame()
 {
 	if(DEBUG)
-		iprintf("HIT DOFRAME\n");
+		printf("HIT DOFRAME\n");
 	int pad=0;
 	// char map[8]={0,1,2,3,5,6,4,7}; // u/d/l/r/b/c/a/start
 
@@ -747,7 +630,7 @@ static int EmulateScanBG3(unsigned int scan,unsigned short *sdata)
 	}
 	*/
 
-	// iprintf("\x1b[17;0HScanline: %d        ",scan);
+	// printf("\x1b[17;0HScanline: %d        ",scan);
 	// scan goes from 0 - 223
 	
 	/*
@@ -844,7 +727,7 @@ static int DrawFrame()
 void EmulateFrame()
 {
 	if (choosingfile || RomData==NULL) {
-		//iprintf("YOUR ROM DATA IS NULL THAT IS NOT GOOD\n");
+		//printf("YOUR ROM DATA IS NULL THAT IS NOT GOOD\n");
 		// swiDelay(100000);
 		return;
 	}
@@ -885,7 +768,7 @@ void processvblank()
 		dsFrameCount++;
 		dosVibrate();
 		if (dsFrameCount == 60){
-			iprintf("\x1b[19;0HFPS: %i     \n",FPS);
+			printf("\x1b[19;0HFPS: %i     \n",FPS);
 			FPS = 0;
 			dsFrameCount = 0;
 			if (palette_done) palette_done = 0;
@@ -933,7 +816,7 @@ void on_irq()
 			//
 		}
 		else {
-			//iprintf("I AM ABOUT TO CALL EMULATEFRAME THIS IS SO EXCITING\n");
+			//printf("I AM ABOUT TO CALL EMULATEFRAME THIS IS SO EXCITING\n");
 			// EmulateFrame();
 			// EmulateSound();
 			// DrawFrame();
@@ -1015,7 +898,6 @@ int FileChoose()
 		char path[256];
 		getcwd(path, 256);
 		sprintf(fileName, "%s%s", path, filename.c_str());
-		InitSound(filename.c_str());
 		return 1; // we got a file
 	}
 }
@@ -1084,7 +966,7 @@ int EmulateInit()
 		if(romfile != NULL) {
 			fseek(romfile,0,SEEK_END);
 			i = ftell(romfile);
-			// iprintf("ftell: %i\n",i);
+			// printf("ftell: %i\n",i);
 			if (isDSiMode()) {
 				UsingExtendedMemory = true;
 				LoadROMToMemory((uint16*)0x02A00000,i);
@@ -1093,7 +975,7 @@ int EmulateInit()
 				struct stat st;
 				stat("/",&st);
 				if((st.st_dev == DEVICE_TYPE_SCSD) || (st.st_dev == DEVICE_TYPE_SCCF)) { // cart is SCSD/SCCF
-					iprintf("Using SuperCard RAM\n");
+					printf("Using SuperCard RAM\n");
 
 					UsingExtendedMemory = true;
 
@@ -1110,7 +992,7 @@ int EmulateInit()
 					DC_FlushAll();
 					*OPERA_RAM = 0xF00D;
 					if(*OPERA_RAM == 0xF00D) { // we successfully wrote into OPERA_RAM
-						iprintf("Using Opera RAM Expansion\n");
+						printf("Using Opera RAM Expansion\n");
 
 						UsingExtendedMemory = true;
 
@@ -1123,7 +1005,7 @@ int EmulateInit()
 				PicoCartLoad(romfile,&RomData,&RomSize);
 			}
 			fclose(romfile);
-			iprintf("Loaded.\n");
+			printf("Loaded.\n");
 
 			PicoCartInsert(RomData,RomSize);
 #ifdef ARM9_SOUND
@@ -1131,29 +1013,29 @@ int EmulateInit()
 #endif
 		}
 		else {
-			iprintf("Error opening file");
+			printf("Error opening file");
 		}
 
 		// Load SRAM
 		saveLoadGame(1,1);
 	}
 	
-	iprintf("ROM Size: %d\n",RomSize);
-	iprintf("ROM Header Info:\n");
+	printf("ROM Size: %d\n",RomSize);
+	printf("ROM Header Info:\n");
 	for(i = 0; i < 128; i+=2) {
 		if(!(RomData[0x100+i] == ' ' && RomData[0x100+i+1] == ' ' && RomData[0x100+i+2] == ' ')) {
-			iprintf("%c",RomData[0x100+i+1]);
-			iprintf("%c",RomData[0x100+i]);
+			printf("%c",RomData[0x100+i+1]);
+			printf("%c",RomData[0x100+i]);
 		}
 	}
 	
-	// iprintf("\n%#x\n",Pico.m.hardware);
+	// printf("\n%#x\n",Pico.m.hardware);
 	// PrintRegion();
 	
-	// iprintf("\x1b[10;0H");
-	iprintf("\n\t\tPicoDriveTWL");
-	// iprintf(VERSION_NO);
-	iprintf("\n");
+	// printf("\x1b[10;0H");
+	printf("\n\t\tPicoDriveTWL");
+	// printf(VERSION_NO);
+	printf("\n");
 
 	cx = 32;
 	cy = 16;
@@ -1171,7 +1053,7 @@ int EmulateInit()
 
 void FindAppendedRom(void)
 {
-	iprintf("Appended ROM check...");
+	printf("Appended ROM check...");
 	
 	sysSetBusOwners(BUS_OWNER_ARM9,BUS_OWNER_ARM9);
 
@@ -1188,13 +1070,13 @@ void FindAppendedRom(void)
 		if( (*genheader == 'S') && (*(genheader+1) == 'E') && 
 			(*(genheader+2) == 'G') && (*(genheader+3) == 'A') && 
 			(*(genheader+4) == ' ') ) { // we have a match
-			iprintf("FOUND ROM!\n");
+			printf("FOUND ROM!\n");
 			smdformat = false;
 			foundrom = true;
 		}
 		// SMD format ROMs should have 0xaa and 0xbb @ 0x08 and 0x09
 		else if( (*(rompointer+0x08) == 0xaa) && (*(rompointer+0x09) == 0xbb) ) { // check for SMD format ROM
-			iprintf("FOUND SMD!\n");
+			printf("FOUND SMD!\n");
 			smdformat = true;
 			foundrom = true;
 		}
@@ -1223,7 +1105,7 @@ void FindAppendedRom(void)
 		// Might be useful for some other card where we can detect
 		// insertion and use GBAROM but not FAT.
 		if(0) {
-			iprintf("Supercard detected.\n");
+			printf("Supercard detected.\n");
 			rom=(unsigned char *)rompointer;
 		}
 		else {
@@ -1249,7 +1131,7 @@ void FindAppendedRom(void)
 		UsingAppendedRom = true;
 	}
 	else {
-		iprintf("ROM NOT FOUND!\n");
+		printf("ROM NOT FOUND!\n");
 		RomData = NULL;
 		UsingAppendedRom = false;
 	}
@@ -1356,14 +1238,14 @@ int main(int argc, char **argv)
 
 	InitInterruptHandler();
 
-	// iprintf("About to call InitFiles()...\n");
+	// printf("About to call InitFiles()...\n");
 
 
 #ifdef ARM9_SOUND
 	PsndRate = 11025;
 #endif
 	
-	iprintf("\nTrying to init FAT...\n");
+	printf("\nTrying to init FAT...\n");
 	
 
 
@@ -1371,7 +1253,7 @@ int main(int argc, char **argv)
 		extern char* romSpace;
 		romSpace = new char[isDSiMode() ? 0x200000 : 0x304000];	// Allocate space for the ROM, or ROM bank cache
 
-		iprintf("\x1b[2J");
+		printf("\x1b[2J");
 		
 		if(chdir("/md/")){
 			chdir("/");
@@ -1391,7 +1273,6 @@ int main(int argc, char **argv)
 				{
 					filename.erase(0, last_slash_idx + 1);
 				}
-				InitSound(filename.c_str());
 			}
 		} else if (!FileChoose()) {
 			consoleClear();
@@ -1399,10 +1280,10 @@ int main(int argc, char **argv)
 		}
 	}
 	else {
-		iprintf("FAT init failed.\n");
+		printf("FAT init failed.\n");
 		FindAppendedRom();
 		if(!UsingAppendedRom) {
-			iprintf("\nNo way to load ROMs found.");
+			printf("\nNo way to load ROMs found.");
 			return 1;
 		}	
 	}
@@ -1423,28 +1304,20 @@ int main(int argc, char **argv)
 	/*
 	int offset;
 	offset = (char *)&Pico.video - (char *)&Pico;
-	iprintf("\nPico.video: %x\n",offset);
+	printf("\nPico.video: %x\n",offset);
 	offset = (char *)&Pico.vram - (char *)&Pico;
-	iprintf("Pico.vram: %x\n",offset);
+	printf("Pico.vram: %x\n",offset);
 	offset = (char *)&Pico.vsram - (char *)&Pico;
-	iprintf("Pico.vsram: %x\n",offset);
+	printf("Pico.vsram: %x\n",offset);
 	offset = (char *)&Pico.cram - (char *)&Pico;
-	iprintf("Pico.cram: %x\n",offset); 
+	printf("Pico.cram: %x\n",offset); 
 	*/
 
 	// u32 *testMem;
 	// int mallCount = 0;
 
 	while(1) {
-		extern bool streamFound;
-		if(streamFound) {
-			choosingfile = 0;
-		}
 		if(choosingfile) {
-			if (!soundPaused) {
-				snd().stopStream();
-				mmEffectCancelAll();
-			}
 			ConvertToGrayscale();
 			for (int i = 0; i < 30; i++) swiWaitForVBlank();
 			if(EmulateExit()) {
@@ -1452,7 +1325,6 @@ int main(int argc, char **argv)
 			}
 			else {
 				consoleClear();
-				if (!soundPaused) snd().beginStream();
 			}
 			choosingfile = 0;
 		}
@@ -1461,24 +1333,23 @@ int main(int argc, char **argv)
 		if(testMem != NULL) {
 			mallCount++;
 		}
-		iprintf("\x1b[17;0HBytes/128: %d              ",mallCount);
+		printf("\x1b[17;0HBytes/128: %d              ",mallCount);
 		*/
 		EmulateFrame();
-		if (!soundPaused) snd().updateStream();
 		// Save SRAM
 		if(Pico.m.sram_changed) {
-			// iprintf("\x1b[17:0HSaving SRAM");
+			// printf("\x1b[17:0HSaving SRAM");
 			saveLoadGame(0,1);
 			Pico.m.sram_changed = 0;
 		}
 		// dmaCopy(BG_GFX,BG_GFX_SUB,512*256*2);
-		// iprintf("\x1b[17;0H                        ");
+		// printf("\x1b[17;0H                        ");
 
-		// iprintf("\x1b[17;0HFPS: %d   ",FPS);
+		// printf("\x1b[17;0HFPS: %d   ",FPS);
 
 		/*
 		mi = mallinfo();
-		iprintf("\n%i\t\tarena\n%i\t\tordblks\n%i\t\tuordblks\n%i\t\tfordblks\n",mi.arena,mi.ordblks,mi.uordblks,mi.fordblks);
+		printf("\n%i\t\tarena\n%i\t\tordblks\n%i\t\tuordblks\n%i\t\tfordblks\n",mi.arena,mi.ordblks,mi.uordblks,mi.fordblks);
 
 		swiWaitForVBlank();
 		// LastSecond = (IPC->curtime)[7];
