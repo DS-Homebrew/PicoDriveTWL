@@ -53,6 +53,8 @@ int choosingfile = 1;
 int dsFrameCount = 0;
 u32 pdFrameCount = 0;
 int FPS = 0;
+int fpsDisplay = 0;
+bool updateFPSDisplay = false;
 int frameCountForFrameSkip = 1;
 unsigned char palette_done = 0;
 
@@ -776,7 +778,8 @@ void processvblank()
 		dsFrameCount++;
 		dosVibrate();
 		if (dsFrameCount == 60){
-			printf("\x1b[19;0HFPS: %i     \n",FPS);
+			fpsDisplay = FPS;
+			updateFPSDisplay = true;
 			FPS = 0;
 			dsFrameCount = 0;
 			if (palette_done) palette_done = 0;
@@ -1363,6 +1366,7 @@ int main(int argc, char **argv)
 		swiWaitForVBlank();
 		// LastSecond = (IPC->curtime)[7];
 		*/
+		if (updateFPSDisplay) printf("\x1b[19;0HFPS: %i     \n",fpsDisplay);
 	}
 	return 0;
 }
