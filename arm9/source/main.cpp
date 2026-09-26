@@ -970,7 +970,7 @@ int EmulateInit()
 			// printf("ftell: %i\n",i);
 			if (isDSiMode()) {
 				UsingExtendedMemory = true;
-				if (!ExtRomData) ExtRomData = new unsigned char[0x800000];
+				if (!ExtRomData) ExtRomData = new unsigned char[0x804000];
 				LoadROMToMemory((uint16*)ExtRomData,i);
 			} else if(i >= 0x304000) {
 				sysSetCartOwner(BUS_OWNER_ARM9);
