@@ -315,7 +315,12 @@ int saveLoadGame(int load, int sram)
 	char saveFname[256];
 	if(!UsingAppendedRom) {
 		strcpy(saveFname, fileName);
-		if(saveFname[strlen(saveFname)-4] == '.') saveFname[strlen(saveFname)-4] = 0;
+		for (i = strlen(saveFname); i >= 0; i--) {
+			if (saveFname[i] == '.') {
+				saveFname[i] = 0;
+				break;
+			}
+		}
 		strcat(saveFname, sram ? ".srm" : ".pds");
 		// printf("\x1b[0;0HSavename: %s\n",saveFname);
 	}
