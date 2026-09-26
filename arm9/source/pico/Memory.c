@@ -175,9 +175,6 @@ static void OtherWrite8(u32 a,u32 d)
 
   if ((a&0xffc000)==0xa00000)  { // Z80 ram
 	Pico.zram[a&0x1fff]=(u8)d;
-#ifdef ARM9_SOUND
-	SoundPlayZ80();
-#endif
 	return;
   }
   if ((a&0xfffffc)==0xa04000)  { 

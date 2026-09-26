@@ -127,7 +127,7 @@ static int PicoAreaScan(int action,unsigned int ver)
 	if(PicoOpt&7) {
 #ifdef ARM9_SOUND
 	  if((PmovAction&3)==1) z80_pack(cpu_z80);
-      ret = SCAN_VAR(cpu_z80,"cpu_z80")
+      int ret = SCAN_VAR(cpu_z80,"cpu_z80")
 	  // do not unpack if we fail to load z80 state
 	  if((PmovAction&3)==2) {
         if(ret) z80_reset();
