@@ -649,6 +649,7 @@ static int EmulateScanBG3(unsigned int scan,unsigned short *sdata)
 		sdata[i] = PicoCram(((u16*)sdata)[i]);
 	}
 	*/
+	DC_FlushRange(sdata, 640); // Ensure all pixels display properly
 	dmaCopyWords(3,sdata,BG_GFX+(512*scan),640);
 	// memcpy(BG_GFX+(512*scan),sdata,320);
 	// dmaCopy(sdata,VRAM_A_MAIN_BG_0x6000000+(512*scan),320*2);
