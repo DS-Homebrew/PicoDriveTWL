@@ -37,6 +37,7 @@ unsigned short *framebuff = 0;
 unsigned short realbuff[(8+320)*(8+224+8)];
 #endif
 
+static unsigned char *ExtRomData=NULL;
 static unsigned char *RomData=NULL;
 static unsigned int RomSize=0;
 
@@ -969,7 +970,8 @@ int EmulateInit()
 			// printf("ftell: %i\n",i);
 			if (isDSiMode()) {
 				UsingExtendedMemory = true;
-				LoadROMToMemory((uint16*)0x02A00000,i);
+				if (!ExtRomData) ExtRomData = new unsigned char[0x800000];
+				LoadROMToMemory((uint16*)ExtRomData,i);
 			} else if(i >= 0x304000) {
 				sysSetCartOwner(BUS_OWNER_ARM9);
 				struct stat st;
