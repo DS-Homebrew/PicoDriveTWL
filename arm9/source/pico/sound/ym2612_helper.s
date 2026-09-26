@@ -5,9 +5,12 @@
 @ All Rights Reserved
 
 
+.arm
+
 @ sum_outputs* assume r11 points to output buffer
 
 .global sum_outputs_mono @ UINT32 *out_fm
+.type sum_outputs_mono, %function
 sum_outputs_mono:
     stmfd   sp!, {lr}
     ldmia   r0, {r0-r3,r12,lr} @ checked the ARM manual, this should be safe
@@ -17,6 +20,7 @@ sum_outputs_mono:
 
 
 .global sum_outputs_mono_mix @ UINT32 *out_fm
+.type sum_outputs_mono_mix, %function
 sum_outputs_mono_mix:
     stmfd   sp!, {lr}
     ldmia   r0, {r0-r3,r12,lr}
@@ -44,12 +48,12 @@ sum_outputs_mono_mix:
 .done1:
     strh    r0, [r11], #2
 
-    ldmfd   sp!, {lr}
-    bx      lr
+    ldmfd   sp!, {pc}
 
 
 
 .global sum_outputs_stereo @ UINT32 *out_fm, UINT32 pan
+.type sum_outputs_stereo, %function
 sum_outputs_stereo:
     stmfd   sp!, {r4-r6,lr}
     mov     r5, #0      @ lt
@@ -59,6 +63,7 @@ sum_outputs_stereo:
 
 
 .global sum_outputs_stereo_mix @ UINT32 *out_fm, UINT32 pan
+.type sum_outputs_stereo_mix, %function
 sum_outputs_stereo_mix:
     stmfd   sp!, {r4-r6,lr}
     ldrsh   r5, [r11]   @ lt
@@ -109,7 +114,6 @@ sum_outputs_stereo_mix:
     orr     r5, r5, r6, lsl #16
     stmia   r11!, {r5}
 
-    ldmfd   sp!, {r4-r6,lr}
-    bx      lr
+    ldmfd   sp!, {r4-r6,pc}
 
 

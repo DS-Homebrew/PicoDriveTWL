@@ -7,7 +7,11 @@
 ;@ For commercial use, separate licencing terms must be obtained.
 
   .global CycloneRun
+  .type CycloneRun, %function
   .global CycloneVer
+  .type CycloneVeq, %function
+  .arm
+
 CycloneVer: .long 0x0084
 
 ;@ --------------------------- Framework --------------------------
@@ -38795,7 +38799,7 @@ Op50c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd50c8
 
 ;@ Get Branch offset:
@@ -40029,7 +40033,7 @@ Op51c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd51c8
 
 ;@ Get Branch offset:
@@ -40307,7 +40311,7 @@ Op52c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd52c8
 
 ;@ Get Branch offset:
@@ -40640,7 +40644,7 @@ Op53c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd53c8
 
 ;@ Get Branch offset:
@@ -40969,7 +40973,7 @@ Op54c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd54c8
 
 ;@ Get Branch offset:
@@ -41276,7 +41280,7 @@ Op55c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd55c8
 
 ;@ Get Branch offset:
@@ -41583,7 +41587,7 @@ Op56c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd56c8
 
 ;@ Get Branch offset:
@@ -41890,7 +41894,7 @@ Op57c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd57c8
 
 ;@ Get Branch offset:
@@ -42197,7 +42201,7 @@ Op58c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd58c8
 
 ;@ Get Branch offset:
@@ -42504,7 +42508,7 @@ Op59c8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd59c8
 
 ;@ Get Branch offset:
@@ -42811,7 +42815,7 @@ Op5ac8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd5ac8
 
 ;@ Get Branch offset:
@@ -43118,7 +43122,7 @@ Op5bc8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd5bc8
 
 ;@ Get Branch offset:
@@ -43425,7 +43429,7 @@ Op5cc8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd5cc8
 
 ;@ Get Branch offset:
@@ -43732,7 +43736,7 @@ Op5dc8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd5dc8
 
 ;@ Get Branch offset:
@@ -45037,7 +45041,7 @@ Op5ec8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd5ec8
 
 ;@ Get Branch offset:
@@ -46372,7 +46376,7 @@ Op5fc8:
   strh r0,[r7,r1]
 
 ;@ Check if Dn.w is -1
-  cmps r0,#-1
+  cmp r0,#-1
   beq DbraEnd5fc8
 
 ;@ Get Branch offset:

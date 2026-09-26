@@ -10,12 +10,14 @@
 .extern Pico
 .extern framebuff
 .extern PicoCramHigh
+.arm
 
 .equiv START_ROW, 		1
 .equiv END_ROW, 		27
 
 
 .global BackFillFull @ int reg7
+.type BackFillFull, %function
 
 BackFillFull:
     stmfd   sp!, {r4-r9,lr}
@@ -311,6 +313,7 @@ BackFillFull:
 @static void DrawLayerFull(int plane, int *hcache, int planestart, int planeend)
 
 .global DrawLayerFull
+.type DrawLayerFull, %function
 
 DrawLayerFull:
     stmfd   sp!, {r4-r10,lr}
@@ -546,6 +549,7 @@ DrawLayerFull:
 
 
 .global DrawTilesFromCacheF @ int *hc
+.type DrawTilesFromCacheF, %function
 
 DrawTilesFromCacheF:
     stmfd   sp!, {r4-r10,lr}
@@ -643,6 +647,7 @@ DrawTilesFromCacheF:
 
 @ (tile_start<<16)|row_start
 .global DrawWindowFull @ int tstart, int tend, int prio
+.type DrawWindowFull, %function
 
 DrawWindowFull:
     stmfd   sp!, {r4-r10,lr}
@@ -855,6 +860,7 @@ DrawWindowFull:
 
 
 .global DrawSpriteFull @ unsigned int *sprite
+.type DrawSpriteFull, %function
 
 DrawSpriteFull:
     stmfd   sp!, {r4-r10,lr}

@@ -9,5 +9,5 @@ void Timer_Init();
 #else
 #define SetupProfile( ) int ____startMS_ = 0;
 #define BeginProfile( ) ____startMS_ = MILLISECOND_COUNTER;
-#define EndProfile(fname) iprintf( "Function %s took %dms  \n", fname, ( MILLISECOND_COUNTER - ____startMS_ ) );
+#define EndProfile(fname) printf( "Function %s took %dms  \n", fname, ( MILLISECOND_COUNTER - ____startMS_ ) );
 #endif

@@ -5,9 +5,13 @@
 
 ;@ For commercial use, separate licencing terms must be obtained.
 
+      .arm
+
       .global DrZ80Run
+      .type DrZ80Run, %function
       .global DrZ80Ver
-      
+      .type DrZ80Ver, %function
+
 DrZ80Ver: .long 0x0001
 
 	  .equiv SPECIALIZED_DRZ80, 		1		;@ 1 = Use picodrive specific optimizations

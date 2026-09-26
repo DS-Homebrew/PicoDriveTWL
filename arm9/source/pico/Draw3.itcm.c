@@ -108,7 +108,7 @@ static void DrawLayerFull(int plane, int planestart, int planeend)
 	if (plane==0) nametab=(pvid->reg[2]&0x38)<< 9; // A
 	else          nametab=(pvid->reg[4]&0x07)<<12; // B
 
-	iprintf("\x1b[18;0HWidth: %d\tHeight: %d",width,height);
+	printf("\x1b[18;0HWidth: %d\tHeight: %d",width,height);
 
 	// Get vertical scroll value:
 	vscroll=Pico.vsram[plane];
@@ -321,7 +321,7 @@ static int UpdatePalette()
 void PicoFrameFull()
 {
 	// Draw screen
-	// iprintf("\x1b[18;0HPicoFrameFull hit");
+	// printf("\x1b[18;0HPicoFrameFull hit");
 
 	tileoffset = 0;
 	mapoffset = 0;
@@ -330,8 +330,8 @@ void PicoFrameFull()
 	
 	if (Pico.video.reg[1]&0x40) DrawDisplayFull();
 
-	iprintf("\x1b[19;0HTile offset:\t%d     \n",tileoffset);
-	iprintf("Map offset:\t%d     ",mapoffset);
+	printf("\x1b[19;0HTile offset:\t%d     \n",tileoffset);
+	printf("Map offset:\t%d     ",mapoffset);
 }
 
 #endif // HW_FRAME_RENDERER

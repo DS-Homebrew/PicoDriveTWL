@@ -9,10 +9,8 @@
 
 //#define __debug_io
 
-#include <maxmod9.h>
 #include "PicoInt.h"
 #include "file.h"
-#include "externSound.h"
 
 #include "sound/ym2612.h"
 #include "sound/sn76496.h"
@@ -56,7 +54,7 @@ static void CPU_CALL PicoCheckPc(u32 pc)
 #endif
 
 #ifdef EMU_C68K
-extern "C" u32 PicoCheckPc(u32 pc);
+u32 PicoCheckPc(u32 pc);
 /*
 static u32 PicoCheckPc(u32 pc)
 {
@@ -84,7 +82,7 @@ int PicoInitPc(u32 pc)
 }
 
 // -----------------------------------------------------------------
-extern "C" int PadRead(int i);
+int PadRead(int i);
 /*
 static int PadRead(int i)
 {
@@ -119,7 +117,7 @@ static int SRAMRead(u32 a)
   return *(u16 *)(SRam.data-SRam.start+a);
 }
 
-extern "C" u32 OtherRead16(u32 a);
+u32 OtherRead16(u32 a);
 /*
 static u32 OtherRead16(u32 a)
 {
@@ -320,7 +318,7 @@ static void OtherWrite16(u32 a,u32 d)
 // -----------------------------------------------------------------
 //                     Read Rom and read Ram
 
-extern "C" u8 CPU_CALL PicoRead8(u32 a);
+u8 CPU_CALL PicoRead8(u32 a);
 /*
 static u8 CPU_CALL PicoRead8(u32 a)
 {
@@ -346,7 +344,7 @@ static u8 CPU_CALL PicoRead8(u32 a)
   return (u8)d;
 }
 */
-extern "C" u16 CPU_CALL PicoRead16(u32 a);
+u16 CPU_CALL PicoRead16(u32 a);
 /*
 u16 CPU_CALL PicoRead16(u32 a)
 {
@@ -373,7 +371,7 @@ u16 CPU_CALL PicoRead16(u32 a)
 }
 */
 
-extern "C" u32 CPU_CALL PicoRead32(u32 a);
+u32 CPU_CALL PicoRead32(u32 a);
 /*
 u32 CPU_CALL PicoRead32(u32 a)
 {
@@ -410,9 +408,6 @@ static void CPU_CALL PicoWrite8(u32 a,u8 d)
   if ((a&0xe00000)==0xe00000) {
     u8 *pm=(u8 *)(Pico.ram+((a^1)&0xffff));
     pm[0]=d;
-    if (!MusicPlayRAM()) {
-        SoundPlayRAM();
-    }
     return;
   } // Ram
 

@@ -75,9 +75,9 @@ void loadRomBank(int page, int i) {
 	currentPage++;
 	if (currentPage >= cacheAmount) currentPage = 0;
 
-	/*iprintf("\x1b[14;0HFile   : %s",fileName);
-	iprintf("\x1b[17;0HPage   : %d        ",page);
-	iprintf("\x1b[18;0HROM src: %X        ",(int)page*0x80000);
-	iprintf("\x1b[19;0HROM dst: %X        ",(int)0x80000+(i*0x80000));
-	iprintf("\x1b[20;0HRAM dst: %X        ",(int)Pico.rom+0x80000+(i*0x80000));*/
+	/*printf("\x1b[14;0HFile   : %s",fileName);
+	printf("\x1b[17;0HPage   : %d        ",page);
+	printf("\x1b[18;0HROM src: %X        ",(int)page*0x80000);
+	printf("\x1b[19;0HROM dst: %X        ",(int)0x80000+(i*0x80000));
+	printf("\x1b[20;0HRAM dst: %X        ",(int)Pico.rom+0x80000+(i*0x80000));*/
 }

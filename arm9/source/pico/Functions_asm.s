@@ -5,95 +5,98 @@
 .extern PicoCpu
 .extern Scanline
 .extern rendstatus
+.arm
 
 @---------------------------------------------------------------------------------------------------
 @	FUNCTIONS RELATED TO DIFFERENT STUFF (PICO.C, MAIN.CPP, VIDEOPORT.C, DRAW.C)
 @	TO DO: ORGANISE THEM IN DIFFERENT .S FILES
 @---------------------------------------------------------------------------------------------------
-.global TileNorm		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
-TileNorm:
-	stmfd   sp!, {r4, lr}			
-	ldr     r3, =(Pico+0x10000)		@Pico.vram
-	lsl     r1, r1, #1
-	add		r3, r3, r1
-	ldr     r4, [r3]				@r4 now has pack
-	cmp     r4, #0
-	beq     .endifblank
-	mov		r3, #0x1E				@ 00011110
-    ands    r1, r3, r4, lsr #11 @ #0x0000f000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0]
-    ands    r1, r3, r4, lsr #7  @ #0x00000f00
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#2]
-    ands    r1, r3, r4, lsr #3  @ #0x000000f0
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#4]
-    ands    r1, r3, r4, lsl #1  @ #0x0000000f
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#6]
-    ands    r1, r3, r4, lsr #27 @ #0xf0000000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#8]
-    ands    r1, r3, r4, lsr #23 @ #0x0f000000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#10]
-    ands    r1, r3, r4, lsr #19 @ #0x00f00000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#12]
-    ands    r1, r3, r4, lsr #15 @ #0x000f0000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#14]
-	mov     r0, #0				@r0 contains OK return value
-	ldmfd   sp!, {r4, pc}
-.endifblank:
-	mov     r0, #1				@r0 contains BLANK return value
-	ldmfd   sp!, {r4, pc}
+@.global TileNorm		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
+@.type TileNorm, %function
+@TileNorm: @ broken
+@	stmfd   sp!, {r4, lr}			
+@	ldr     r3, =(Pico+0x10000)		@Pico.vram
+@	lsl     r1, r1, #1
+@	add		r3, r3, r1
+@	ldr     r4, [r3]				@r4 now has pack
+@	cmp     r4, #0
+@	beq     .endifblank
+@	mov		r3, #0x1E				@ 00011110
+@    ands    r1, r3, r4, lsr #11 @ #0x0000f000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0]
+@    ands    r1, r3, r4, lsr #7  @ #0x00000f00
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#2]
+@    ands    r1, r3, r4, lsr #3  @ #0x000000f0
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#4]
+@    ands    r1, r3, r4, lsl #1  @ #0x0000000f
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#6]
+@    ands    r1, r3, r4, lsr #27 @ #0xf0000000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#8]
+@    ands    r1, r3, r4, lsr #23 @ #0x0f000000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#10]
+@    ands    r1, r3, r4, lsr #19 @ #0x00f00000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#12]
+@    ands    r1, r3, r4, lsr #15 @ #0x000f0000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#14]
+@	mov     r0, #0				@r0 contains OK return value
+@	ldmfd   sp!, {r4, pc}
+@.endifblank:
+@	mov     r0, #1				@r0 contains BLANK return value
+@	ldmfd   sp!, {r4, pc}
 	
 @------------------------------------------------------------------------
-.global TileFlip		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
+@.global TileFlip		@ unsigned short pd (r0), int addr (r1), unsigned short pal (r2)
+@.type TileFlip, %function
+@TileFlip: @ broken?
+@	stmfd   sp!, {r4, lr}			
+@	ldr     r3, =(Pico+0x10000)		@Pico.vram
+@	lsl     r1, r1, #1
+@	add		r3, r3, r1
+@	ldr     r4, [r3]				@r4 now has pack
+@	cmp     r4, #0
+@	beq     .endifblank2
+@	mov		r3, #0x1E				@ 00011110
+@    ands    r1, r3, r4, lsr #15 @ #0x000f0000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0]
+@	ands    r1, r3, r4, lsr #19 @ #0x00f00000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#2]
+@	ands    r1, r3, r4, lsr #23 @ #0x0f000000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#4]
+@	ands    r1, r3, r4, lsr #27 @ #0xf0000000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#6]
+@	ands    r1, r3, r4, lsl #1  @ #0x0000000f
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#8]
+@	ands    r1, r3, r4, lsr #3  @ #0x000000f0
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#10]
+@	ands    r1, r3, r4, lsr #7  @ #0x00000f00
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0,#12]
+@	ands    r1, r3, r4, lsr #11 @ #0x0000f000
+@    ldrneh  r1, [r2, r1]
+@    strneh  r1, [r0, #14]
+@	mov     r0, #0				@r0 contains OK return value
+@	ldmfd   sp!, {r4, pc}
+@.endifblank2:
+@	mov     r0, #1				@r0 contains BLANK return value
+@	ldmfd   sp!, {r4, pc}
 
-TileFlip:
-	stmfd   sp!, {r4, lr}			
-	ldr     r3, =(Pico+0x10000)		@Pico.vram
-	lsl     r1, r1, #1
-	add		r3, r3, r1
-	ldr     r4, [r3]				@r4 now has pack
-	cmp     r4, #0
-	beq     .endifblank2
-	mov		r3, #0x1E				@ 00011110
-    ands    r1, r3, r4, lsr #15 @ #0x000f0000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0]
-	ands    r1, r3, r4, lsr #19 @ #0x00f00000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#2]
-	ands    r1, r3, r4, lsr #23 @ #0x0f000000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#4]
-	ands    r1, r3, r4, lsr #27 @ #0xf0000000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#6]
-	ands    r1, r3, r4, lsl #1  @ #0x0000000f
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#8]
-	ands    r1, r3, r4, lsr #3  @ #0x000000f0
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#10]
-	ands    r1, r3, r4, lsr #7  @ #0x00000f00
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0,#12]
-	ands    r1, r3, r4, lsr #11 @ #0x0000f000
-    ldrneh  r1, [r2, r1]
-    strneh  r1, [r0, #14]
-	mov     r0, #0				@r0 contains OK return value
-	ldmfd   sp!, {r4, pc}
-.endifblank2:
-	mov     r0, #1				@r0 contains BLANK return value
-	ldmfd   sp!, {r4, pc}
-		
 @-----------------------------------------------------------------------------------------------------
 .global BackFill @ reg7 (r0)
+.type BackFill, %function
 BackFill:
 	stmfd   sp!, {r4-r9,lr}
     mov     r0, r0, lsl #26
@@ -134,6 +137,7 @@ BackFill:
 	
 @-----------------------------------------------------------------------------------------------------
 .global UpdatePalette
+.type UpdatePalette, %function
 UpdatePalette:
 	mov		r1, #0				@r1 = while condition
 	push	{r4}
@@ -164,6 +168,7 @@ UpdatePalette:
 
 @-----------------------------------------------------------------------------------------------------
 .global DrawSprite			@unsigned int *sprite (r0), int **hc (r1)
+.type DrawSprite, %function
 DrawSprite:
 	stmfd   sp!, {r1-r9,lr}
 	ldr		r2, [r0]			@sy = sprite[0] (r2)
@@ -263,6 +268,7 @@ DrawSprite:
 
 @-----------------------------------------------------------------------------------------------------
 .global DrawAllSprites		@ int *hcache (r0), int maxwidth (r1)
+.type DrawAllSprites, %function
 DrawAllSprites:
 	stmfd   sp!, {r4-r10,lr}
 	str     fp, [sp, #-4]!
@@ -369,6 +375,7 @@ DrawAllSprites:
 
 @-----------------------------------------------------------------------------------------------------
 .global DrawSpritesFromCache2				@ int *hc (r0)
+.type DrawSpritesFromCache2, %function
 DrawSpritesFromCache2:
 		stmfd	sp!, {r4-r10,lr}
         mov 	r9, r0					@r9 = *hc
@@ -431,6 +438,7 @@ DrawSpritesFromCache2:
 
 @-----------------------------------------------------------------------------------------------------
 .global DrawStrip2				@ TileStrip *ts (r0)		[BROKEN??]
+.type DrawStrip2, %function
 DrawStrip2:
 	stmfd   sp!, {r1-r10,lr}
 	mov 	r4, r0				@r4 = ts	[r0 is free]
@@ -519,6 +527,7 @@ DrawStrip2:
 
 @-----------------------------------------------------------------------------------------------------
 .global VideoRead
+.type VideoRead, %function
 VideoRead:
 	stmfd   sp!, {r6-r7,lr}
 	ldr		r0, =(Pico+0x2226A)
@@ -626,6 +635,7 @@ PicoVideoRead:
 
 @---------------------------------------------------------------------------
 .global VideoWrite		@ unsigned int d (r0)
+.type VideoWrite, %function
 VideoWrite:
 	stmfd   sp!, {r4,r6,lr}
 	ldr		r1, =(Pico+0x2226A)	@r1 = &pico.video.addr
@@ -681,6 +691,7 @@ VideoWrite:
 
 @---------------------------------------------------------------------------
 .global GetDmaSource
+.type GetDmaSource, %function
 GetDmaSource:
 	stmfd   sp!, {lr}
 	ldr		r1, =(Pico+0x22244)	
@@ -696,6 +707,7 @@ GetDmaSource:
 
 @---------------------------------------------------------------------------
 .global GetDmaLength
+.type GetDmaLength, %function
 GetDmaLength:
 	stmfd   sp!, {lr}
 	ldr		r1, =(Pico+0x22257)
@@ -706,6 +718,7 @@ GetDmaLength:
 
 @---------------------------------------------------------------------------
 .global DmaFill2			@int data (r0)
+.type DmaFill2, %function
 DmaFill2:
         stmfd   sp!, {r1-r10,lr}
         mov		r5, r0

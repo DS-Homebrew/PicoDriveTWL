@@ -46,9 +46,9 @@ void DrawSpritesFromCache(int *hc);
 void DrawLayer(int plane, int *hcache, int maxcells);
 #endif
 
-int TileNorm(unsigned short *pd,int addr,unsigned short *pal);
-/*
-static int TileNorm(unsigned short *pd,int addr,unsigned short *pal)
+//int TileNorm(unsigned short *pd,int addr,unsigned short *pal);
+
+int TileNorm(unsigned short *pd,int addr,unsigned short *pal)
 {
   unsigned int pack=0; unsigned int t=0;
 
@@ -68,11 +68,10 @@ static int TileNorm(unsigned short *pd,int addr,unsigned short *pal)
 
   return 1; // Tile blank
 }
-*/
 
-int TileFlip(unsigned short *pd,int addr,unsigned short *pal);
-/*
-static int TileFlip(unsigned short *pd,int addr,unsigned short *pal)
+//int TileFlip(unsigned short *pd,int addr,unsigned short *pal);
+
+int TileFlip(unsigned short *pd,int addr,unsigned short *pal)
 {
   unsigned int pack=0; unsigned int t=0;
 
@@ -91,7 +90,6 @@ static int TileFlip(unsigned short *pd,int addr,unsigned short *pal)
   }
   return 1; // Tile blank
 }
-*/
 
 #ifndef _ASM_DRAW_C
 //void DrawStrip(struct TileStrip *ts);
