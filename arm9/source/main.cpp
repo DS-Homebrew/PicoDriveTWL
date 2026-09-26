@@ -56,7 +56,6 @@ int FPS = 0;
 int fpsDisplay = 0;
 bool updateFPSDisplay = false;
 int frameCountForFrameSkip = 1;
-unsigned char palette_done = 0;
 
 //static u32 xdxval = 320;
 //static u32 ydyval = 300;
@@ -66,7 +65,7 @@ static bool width256 = false;
 static bool currentWidth = false;
 
 #if defined(SW_FRAME_RENDERER) || defined(SW_SCAN_RENDERER)
-unsigned short cram_high[0x40];
+DTCM_DATA unsigned short cram_high[0x40];
 
 extern "C" void UpdatePalette();
 /*
@@ -650,7 +649,8 @@ static int EmulateScanBG3(unsigned int scan,unsigned short *sdata)
 	}
 	*/
 	DC_FlushRange(sdata, 640); // Ensure all pixels display properly
-	dmaCopyWords(3,sdata,BG_GFX+(512*scan),640);
+	while (dmaBusy(3));
+	dmaCopyWordsAsynch(3,sdata,BG_GFX+(512*scan),640);
 	// memcpy(BG_GFX+(512*scan),sdata,320);
 	// dmaCopy(sdata,VRAM_A_MAIN_BG_0x6000000+(512*scan),320*2);
 	/*
@@ -753,12 +753,9 @@ void EmulateFrame()
 		}
 		
 		PicoSkipFrame = 0;
+		UpdatePalette();
 		DoFrame();
 		FPS++;
-	}else{
-		//Let's take advantage of the extra frames
-		UpdatePalette();
-		palette_done = 1;
 	}
 	return;
 }
@@ -783,11 +780,6 @@ void processvblank()
 			updateFPSDisplay = true;
 			FPS = 0;
 			dsFrameCount = 0;
-			if (palette_done) palette_done = 0;
-			else 			  UpdatePalette();
-		}else if(dsFrameCount == 15 || dsFrameCount == 30 || dsFrameCount == 45) {
-			if (palette_done) palette_done = 0;
-			else 			  UpdatePalette();
 		}
 	} else {
 		if (currentWidth != width256) {
