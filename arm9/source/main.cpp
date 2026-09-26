@@ -306,6 +306,8 @@ int decompressSaveState(void)
 
 int saveLoadGame(int load, int sram)
 {
+	return -1; // Somewhere in this code causes a crash
+
 	int i;
 	int res = 0;
 	FILE *PmovFile;
