@@ -375,8 +375,8 @@ DrawAllSprites:
 
 @-----------------------------------------------------------------------------------------------------
 .global DrawSpritesFromCache2				@ int *hc (r0)
-DrawSpritesFromCache2:
 .type DrawSpritesFromCache2, %function
+DrawSpritesFromCache2:
 		stmfd	sp!, {r4-r10,lr}
         mov 	r9, r0					@r9 = *hc
         b       .L2dsfc
