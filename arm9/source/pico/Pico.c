@@ -142,6 +142,9 @@ int PicoReset(int hard)
   Pico.m.pal=pal;
   Pico.video.status &= ~1;
   Pico.video.status |= pal;
+  extern int scanSkip;
+  // scanSkip = pal ? 5 : 7;
+  scanSkip = 7;
 
 #ifdef ARM9_SOUND
   sound_reset(PicoOpt);

@@ -60,7 +60,7 @@ int frameCountForFrameSkip = 1;
 //static u32 xdxval = 320;
 //static u32 ydyval = 300;
 
-static short scalemode = 0;
+short scalemode = 0;
 static bool width256 = false;
 static bool currentWidth = false;
 
@@ -404,7 +404,6 @@ static void dosVibrate()
 	switch(scalemode) {
 	case 0: // aspect
 		REG_BG3PA = ( c * (xSize))>>8;
-		REG_BG3PD = ( c * (316+sVibrate))>>8;
 		break;
 	case 1: // 1:1
 	default:
@@ -427,9 +426,9 @@ static void ChangeScaleMode()
 	switch(scalemode) {
 	case 0: // aspect
 		REG_BG3PA = ( c * (xSize))>>8;
-		REG_BG3PD = ( c * (316+sVibrate))>>8;
+		REG_BG3PD = ( c * (256))>>8;
 		REG_BG3X  = 0;
-		REG_BG3Y  = (-6) << 8;
+		REG_BG3Y  = 0;
 		break;
 	case 1: // 1:1
 		REG_BG3PA = ( c * (256))>>8;
@@ -626,6 +625,9 @@ static int DoFrame()
 #ifdef SW_SCAN_RENDERER
 static int EmulateScanBG3(unsigned int scan,unsigned short *sdata)
 {
+	static int dsScan = 0;
+	if (scan == 0) dsScan = 0;
+
 	// BG_GFX is in the form:
 	// ABBBBBGGGGGRRRRR
 	// 1111110000000000
@@ -650,14 +652,15 @@ static int EmulateScanBG3(unsigned int scan,unsigned short *sdata)
 	*/
 	DC_FlushRange(sdata, 640); // Ensure all pixels display properly
 	while (dmaBusy(3));
-	dmaCopyWordsAsynch(3,sdata,BG_GFX+(512*scan),640);
+	dmaCopyWordsAsynch(3,sdata,BG_GFX+(512*dsScan),640);
 	// memcpy(BG_GFX+(512*scan),sdata,320);
 	// dmaCopy(sdata,VRAM_A_MAIN_BG_0x6000000+(512*scan),320*2);
 	/*
 	if(scan == 223) {
 		memset(BG_GFX+(512*224),64512,512*16);
 	}
-	*/	
+	*/
+	dsScan++;
 	return 0;
 }
 #endif
@@ -1047,8 +1050,6 @@ int EmulateInit()
 	if(scalemode == 1) {
 		REG_BG3X = cx << 8;
 		REG_BG3Y = cy << 8;
-	} else {
-		REG_BG3Y = (-6) << 8;
 	}
 
 	choosingfile = 0;
@@ -1218,7 +1219,7 @@ int main(int argc, char **argv)
 	REG_BG3X  = 0;
 	REG_BG3Y  = 0;
 	REG_BG3PA = ( c * (316))>>8;
-	REG_BG3PD = ( c * (300))>>8;
+	REG_BG3PD = ( c * (256))>>8;
 	// REG_BG3Y = 6 << 8;
 
 

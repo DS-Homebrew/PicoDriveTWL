@@ -564,7 +564,7 @@ static int DrawDisplay()
   return 0;
 }
 
-static int Skip=0;
+int scanSkip=0;
 
 int PicoLine(int scan)
 {
@@ -573,7 +573,12 @@ int PicoLine(int scan)
 	rendstatus = 0;
   }
 
-  if (Skip>0) { Skip--; return 0; } // Skip rendering lines
+  extern short scalemode;
+
+  //if (Skip>0) { Skip--; return 0; } // Skip rendering lines
+  if (scalemode == 0 && (scan % scanSkip) == scanSkip-1) {
+	return 0;
+  }
 
   Scanline=scan;
 
@@ -586,7 +591,8 @@ int PicoLine(int scan)
 
   //if (Pico.video.reg[12]&1)
   //{
-    Skip=PicoScan(Scanline,HighCol+32); // 40-column mode
+    //Skip=PicoScan(Scanline,HighCol+32); // 40-column mode
+    PicoScan(Scanline,HighCol+32); // 40-column mode
   //}
   //else
   //{
