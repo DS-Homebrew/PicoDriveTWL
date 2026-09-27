@@ -3,7 +3,7 @@
 #include "pico/PicoInt.h"
 #include "tonccpy.h"
 
-#define cacheAmount 4
+#define cacheAmount 6
 
 extern char* romSpace;
 

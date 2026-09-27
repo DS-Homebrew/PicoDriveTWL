@@ -976,7 +976,7 @@ int EmulateInit()
 			// printf("ftell: %i\n",i);
 			if (isDSiMode()) {
 				UsingExtendedMemory = true;
-				if (!ExtRomData) ExtRomData = new unsigned char[0x804000];
+				if (!ExtRomData) ExtRomData = new unsigned char[0x404000];
 				LoadROMToMemory((uint16*)ExtRomData,i);
 			} else if(i >= 0x304000) {
 				sysSetCartOwner(BUS_OWNER_ARM9);
@@ -1257,7 +1257,7 @@ int main(int argc, char **argv)
 
 	if(fatInitDefault()) {
 		extern char* romSpace;
-		romSpace = new char[isDSiMode() ? 0x200000 : 0x304000];	// Allocate space for the ROM, or ROM bank cache
+		romSpace = new char[0x304000];	// Allocate space for the ROM, or ROM bank cache
 
 		printf("\x1b[2J");
 		
