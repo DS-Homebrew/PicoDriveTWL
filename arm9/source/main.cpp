@@ -760,7 +760,10 @@ void EmulateFrame()
 		}
 		
 		PicoSkipFrame = 0;
-		UpdatePalette();
+		if (Pico.m.dirtyPal) {
+			UpdatePalette();
+			Pico.m.dirtyPal=0;
+		}
 		DoFrame();
 		FPS++;
 	}
