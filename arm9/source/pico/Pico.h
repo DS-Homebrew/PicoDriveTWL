@@ -52,7 +52,7 @@ void Byteswap(unsigned char *data,int len);
 int DecodeSmd(unsigned char *data,int len);
 
 // Draw.c
-extern int (*PicoScan)(unsigned int num,unsigned short *data);
+extern int (*PicoScan)(unsigned int num,u8 *data);
 //extern int PicoMask; // Mask of which layers to draw // notaz: removed because it is unused anyway
 
 // Draw2.c

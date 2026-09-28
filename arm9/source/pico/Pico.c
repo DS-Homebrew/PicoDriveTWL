@@ -64,6 +64,9 @@ int PicoInit()
   // Setup memory callbacks:
   PicoMemInit();
 
+  extern void init_HighCol();
+  init_HighCol();
+
   // notaz: sram
   SRam.data=0;
   SRam.resize=1;

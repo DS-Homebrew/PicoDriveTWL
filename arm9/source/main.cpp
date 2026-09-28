@@ -65,7 +65,7 @@ static bool width256 = false;
 static bool currentWidth = false;
 
 #if defined(SW_FRAME_RENDERER) || defined(SW_SCAN_RENDERER)
-DTCM_DATA unsigned short cram_high[0x40];
+unsigned short* cram_high = (unsigned short*)BG_PALETTE;
 
 extern "C" void UpdatePalette();
 /*
@@ -623,7 +623,7 @@ static int DoFrame()
 }
 
 #ifdef SW_SCAN_RENDERER
-static int EmulateScanBG3(unsigned int scan,unsigned short *sdata)
+static int EmulateScanBG3(unsigned int scan,u8 *sdata)
 {
 	static int dsScan = 0;
 	if (scan == 0) dsScan = 0;
@@ -650,9 +650,9 @@ static int EmulateScanBG3(unsigned int scan,unsigned short *sdata)
 		sdata[i] = PicoCram(((u16*)sdata)[i]);
 	}
 	*/
-	DC_FlushRange(sdata, 640); // Ensure all pixels display properly
+	DC_FlushRange(sdata, 320); // Ensure all pixels display properly
 	while (dmaBusy(3));
-	dmaCopyWordsAsynch(3,sdata,BG_GFX+(512*dsScan),640);
+	dmaCopyWordsAsynch(3,sdata,BG_GFX+(256*dsScan),320);
 	// memcpy(BG_GFX+(512*scan),sdata,320);
 	// dmaCopy(sdata,VRAM_A_MAIN_BG_0x6000000+(512*scan),320*2);
 	/*
@@ -1178,7 +1178,7 @@ int main(int argc, char **argv)
 #endif
 	
 #ifdef SW_SCAN_RENDERER
-	REG_BG3CNT = BG_BMP16_512x256;
+	REG_BG3CNT = BG_BMP8_512x256;
 	PicoCramHigh = cram_high;
 	PicoScan=EmulateScanBG3; // Setup scanline callback
 #endif
