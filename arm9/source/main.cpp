@@ -396,11 +396,11 @@ static bool sVibrate = false;
 
 static void dosVibrate()
 {
-	s16 c = cosLerp(0) >> 4;
-	int xSize = 316+sVibrate;
 	if (width256) {
-		xSize = 256;
+		return;
 	}
+	s16 c = cosLerp(0) >> 4;
+	const int xSize = 316+sVibrate;
 	switch(scalemode) {
 	case 0: // aspect
 		REG_BG3PA = ( c * (xSize))>>8;
@@ -433,7 +433,7 @@ static void ChangeScaleMode()
 	case 1: // 1:1
 		REG_BG3PA = ( c * (256))>>8;
 		REG_BG3PD = ( c * (256))>>8;
-		REG_BG3X = cx << 8;
+		REG_BG3X = width256 ? 0 : (cx << 8);
 		REG_BG3Y = cy << 8;
 		break;
 	default:
@@ -454,11 +454,13 @@ void ChangeScreenPosition()
 			cy += 4;
 		}
 
-		if(keysPressed & KEY_RIGHT) {
-			cx += 4;
-		}
-		else if(keysPressed & KEY_LEFT) {
-			cx -= 4;
+		if (!width256) {
+			if(keysPressed & KEY_RIGHT) {
+				cx += 4;
+			}
+			else if(keysPressed & KEY_LEFT) {
+				cx -= 4;
+			}
 		}
 
 		if(cy < 0) {
@@ -474,8 +476,10 @@ void ChangeScreenPosition()
 		else if(cx > 60) {
 			cx = 60;
 		}
-		
-		REG_BG3X = cx << 8;
+
+		if (!width256) {
+			REG_BG3X = cx << 8;
+		}
 		REG_BG3Y = cy << 8;
 		// printf("\x1b[17;0Hcy: %d  \n",cy);
 		// printf("cx: %d  ",cx);
@@ -775,21 +779,19 @@ void processvcount()
 
 void processvblank()
 {
+	if (currentWidth != width256) {
+		if (scalemode != 1) ChangeScaleMode();
+		currentWidth = width256;
+	} else {
+		dosVibrate();
+	}
 	if(!choosingfile) {
 		dsFrameCount++;
-		dosVibrate();
 		if (dsFrameCount == 60){
 			fpsDisplay = FPS;
 			updateFPSDisplay = true;
 			FPS = 0;
 			dsFrameCount = 0;
-		}
-	} else {
-		if (currentWidth != width256) {
-			if (scalemode != 1) ChangeScaleMode();
-			currentWidth = width256;
-		} else {
-			dosVibrate();
 		}
 	}
 }
