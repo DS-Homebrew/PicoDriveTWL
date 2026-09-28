@@ -1,7 +1,6 @@
 #include <nds.h>
 #include <stdio.h>
 #include "pico/PicoInt.h"
-#include "tonccpy.h"
 
 #define cacheAmount 6
 
@@ -30,7 +29,7 @@ void loadRomBank(int page, int i) {
 			DC_FlushAll();
 			dmaCopyWords(0, Pico.rom, Pico.rom+0x80000+(i*0x80000), 0x80000);
 		} else {
-			tonccpy(Pico.rom+0x80000+(i*0x80000), Pico.rom, 0x80000);
+			memcpy(Pico.rom+0x80000+(i*0x80000), Pico.rom, 0x80000);
 		}
 		return;
 	}
@@ -41,7 +40,7 @@ void loadRomBank(int page, int i) {
 				DC_FlushAll();
 				dmaCopyWords(0, (char*)romSpace+(i2*0x80000), Pico.rom+0x80000+(i*0x80000), 0x80000);
 			} else {
-				tonccpy(Pico.rom+0x80000+(i*0x80000), (char*)romSpace+(i2*0x80000), 0x80000);
+				memcpy(Pico.rom+0x80000+(i*0x80000), (char*)romSpace+(i2*0x80000), 0x80000);
 			}
 			return;
 		}
@@ -69,7 +68,7 @@ void loadRomBank(int page, int i) {
 		DC_FlushAll();
 		dmaCopyWords(0, bankCache, Pico.rom+0x80000+(i*0x80000), 0x80000);
 	} else {
-		tonccpy(Pico.rom+0x80000+(i*0x80000), bankCache, 0x80000);
+		memcpy(Pico.rom+0x80000+(i*0x80000), bankCache, 0x80000);
 	}
 	cachedPages[currentPage] = page;
 	currentPage++;
