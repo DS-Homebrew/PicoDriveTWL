@@ -947,7 +947,6 @@ void LoadROMToMemory(uint16* location, int size)
 	
 	fseek(romfile,0,SEEK_SET);
 	fread(location,1,size,romfile);
-	fclose(romfile);
 	
 	// Check for SMD:
 	if ((size&0x3fff)==0x200) {

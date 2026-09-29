@@ -68,7 +68,6 @@ int PicoCartLoad(FILE *f,unsigned char **prom,unsigned int *psize)
   size=(size+3)&~3; // Round up to a multiple of 4
 
   fread(romSpace,1,size,f); // Load up the rom
-  fclose(f);
 
   // Check for SMD:
   if ((size&0x3fff)==0x200) { DecodeSmd((unsigned char*)romSpace,size); size-=0x200; } // Decode and byteswap SMD
