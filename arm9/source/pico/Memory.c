@@ -397,7 +397,7 @@ u32 CPU_CALL PicoRead32(u32 a)
 // -----------------------------------------------------------------
 //                            Write Ram
 
-static void CPU_CALL PicoWrite8(u32 a,u8 d)
+void CPU_CALL PicoWrite8(u32 a,u8 d)
 {
 #ifdef __debug_io
   dprintf("w8 : %06x,   %02x", a, d);
@@ -412,7 +412,7 @@ static void CPU_CALL PicoWrite8(u32 a,u8 d)
   OtherWrite8(a,d);
 }
 
-static void CPU_CALL PicoWrite16(u32 a,u16 d)
+void CPU_CALL PicoWrite16(u32 a,u16 d)
 {
 #ifdef __debug_io
   dprintf("w16: %06x, %04x", a, d);
@@ -423,7 +423,7 @@ static void CPU_CALL PicoWrite16(u32 a,u16 d)
   OtherWrite16(a,d);
 }
 
-static void CPU_CALL PicoWrite32(u32 a,u32 d)
+void CPU_CALL PicoWrite32(u32 a,u32 d)
 {
 #ifdef __debug_io
   dprintf("w32: %06x, %08x", a, d);
