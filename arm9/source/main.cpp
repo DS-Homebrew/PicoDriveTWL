@@ -490,29 +490,27 @@ void ChangeScreenPosition()
 
 void ConvertToGrayscale()
 {
-	int i,j;
+	int i;
 	u8 b,g,r,max,min;
-	for(i = 0; i < 224; i++) {
-		for(j = 0; j < 320; j++) {
-			// ABBBBBGGGGGRRRRR
-			// ABBBBB
-			// 011111 = 31
-			b = ((BG_GFX[(i*512)+j])>>10)&31;
-			g = ((BG_GFX[(i*512)+j])>>5)&31;
-			r = (BG_GFX[(i*512)+j])&31;
-			// Value decomposition of hsv
-			max = (b > g) ? b : g;
-			max = (max > r) ? max : r;
+	for(i = 0; i < 64; i++) {
+		// ABBBBBGGGGGRRRRR
+		// ABBBBB
+		// 011111 = 31
+		b = ((BG_PALETTE[i])>>10)&31;
+		g = ((BG_PALETTE[i])>>5)&31;
+		r = (BG_PALETTE[i])&31;
+		// Value decomposition of hsv
+		max = (b > g) ? b : g;
+		max = (max > r) ? max : r;
 
-			// Desaturate
-			min = (b < g) ? b : g;
-			min = (min < r) ? min : r;
-			max = (max + min) / 2;
+		// Desaturate
+		min = (b < g) ? b : g;
+		min = (min < r) ? min : r;
+		max = (max + min) / 2;
 
-			// Weighted average - very slow
-			// max = (u8)((0.3*r) + (0.59*g) + (0.11*b));
-			BG_GFX[(i*512)+j] = 32768|(max<<10)|(max<<5)|(max);
-		}
+		// Weighted average - very slow
+		// max = (u8)((0.3*r) + (0.59*g) + (0.11*b));
+		BG_PALETTE[i] = 32768|(max<<10)|(max<<5)|(max);
 	}
 }
 
@@ -1329,12 +1327,12 @@ int main(int argc, char **argv)
 	while(1) {
 		if(choosingfile) {
 			ConvertToGrayscale();
-			for (int i = 0; i < 30; i++) swiWaitForVBlank();
 			if(EmulateExit()) {
 				EmulateInit();
 			}
 			else {
 				consoleClear();
+				UpdatePalette();
 			}
 			choosingfile = 0;
 		}

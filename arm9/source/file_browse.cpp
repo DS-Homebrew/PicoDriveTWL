@@ -147,6 +147,7 @@ string browseForFile (const vector<string>& extensionList) {
 	int pressed = 0;
 	int screenOffset = 0;
 	int fileOffset = 0;
+	bool selectHoldCheck = true;
 	vector<DirEntry> dirContents;
 
 	getDirectoryContents (dirContents, extensionList);
@@ -159,6 +160,16 @@ string browseForFile (const vector<string>& extensionList) {
 		}
 		// Show cursor
 		printf ("\x1b[%d;0H*", fileOffset - screenOffset + ENTRIES_START_ROW);
+
+		if (selectHoldCheck) {
+			scanKeys();
+			do {
+				scanKeys();
+				swiWaitForVBlank();
+			} while (keysHeld() & KEY_SELECT);
+
+			selectHoldCheck = false;
+		}
 
 		// Power saving loop. Only poll the keys once per frame and sleep the CPU if there is nothing else to do
 		do {
