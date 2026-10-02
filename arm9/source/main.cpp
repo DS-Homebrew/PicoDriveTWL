@@ -516,12 +516,12 @@ void ConvertToGrayscale()
 
 static int SaveStateMenu()
 {
-	int position = 0;
-	
 	// TODO: Compressed save states for appended ROM mode
 	if(UsingAppendedRom) {
 		return 0;
 	}
+
+	int position = 0;
 
 	ConvertToGrayscale();
 	consoleClear();
@@ -537,30 +537,32 @@ static int SaveStateMenu()
 			printf("\x1b[2;7H-> ");
 		}
 		scanKeys();
-		if((keysDown() & KEY_DOWN) || (keysDown() & KEY_UP)) {
+		const u16 pressed = keysDown();
+		if((pressed & KEY_DOWN) || (pressed & KEY_UP)) {
 			position = !position;
 		}
-		if(keysDown() & KEY_B) {
+		if(pressed & KEY_B) {
 			consoleClear();
-			return 0;
+			break;
 		}
-		if(keysDown() & KEY_A) {
+		if(pressed & KEY_A) {
 			consoleClear();
 			if(position) { // save state
 				printf("Saving state...");
 				saveLoadGame(0,0);
 				printf("DONE!\n");
-				return 0;
+				break;
 			}
 			else { // load state
 				printf("Loading state...");
 				saveLoadGame(1,0);
 				printf("DONE!");
-				return 0;
+				break;
 			}
 		}
 	}
-	return -1;
+	UpdatePalette();
+	return 0;
 }
 
 static int DoFrame()
