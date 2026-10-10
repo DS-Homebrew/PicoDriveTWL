@@ -961,13 +961,14 @@ void LoadROMToMemory(uint16* location, int size)
 
 int EmulateInit()
 {
-	int i;
+	int i = 0;
 	PicoInit();
 
 	// romfile=fopen("/SONIC.BIN","rb");
 
 	if(UsingAppendedRom) {
 		PicoCartInsert(RomData,RomSize);
+		i = RomSize;
 #ifdef ARM9_SOUND
 		InitSound();
 #endif
@@ -1033,7 +1034,7 @@ int EmulateInit()
 		saveLoadGame(1,1);
 	}
 	
-	printf("ROM Size: %d\n",RomSize);
+	printf("ROM Size: %d\n",i);
 	printf("ROM Header Info:\n");
 	for(i = 0; i < 128; i+=2) {
 		if(!(RomData[0x100+i] == ' ' && RomData[0x100+i+1] == ' ' && RomData[0x100+i+2] == ' ')) {
