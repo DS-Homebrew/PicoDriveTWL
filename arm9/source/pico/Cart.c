@@ -66,6 +66,7 @@ int PicoCartLoad(FILE *f,unsigned char **prom,unsigned int *psize)
   fseek(f,0,SEEK_END); size=ftell(f); fseek(f,0,SEEK_SET);
 
   size=(size+3)&~3; // Round up to a multiple of 4
+  if (size > 0x304000) size = 0x304000;
 
   fread(romSpace,1,size,f); // Load up the rom
 

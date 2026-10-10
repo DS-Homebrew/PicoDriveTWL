@@ -944,6 +944,7 @@ int EmulateExit()
 void LoadROMToMemory(uint16* location, int size)
 {
 	size=(size+3)&~3; // Round up to a multiple of 4
+	if (size > 0x404000) size = 0x404000;
 	
 	fseek(romfile,0,SEEK_SET);
 	fread(location,1,size,romfile);
