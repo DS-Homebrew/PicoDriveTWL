@@ -160,8 +160,8 @@ void sound_reset(int mask)
 // This is called once per raster (aka line)
 int sound_timers_and_dac(int raster)
 {
-  if(PsndOut)
-    dac_next(raster);
+  // if(PsndOut)
+  //   dac_next(raster);
 
   // Our raster lasts 63.61323/64.102564 microseconds (NTSC/PAL)
   YM2612PicoTick();
@@ -173,12 +173,12 @@ int sound_timers_and_dac(int raster)
 int sound_render()
 {
   // PSG
-  if(PicoOpt & 2)
+  /* if(PicoOpt & 2)
     SN76496Update(PsndOut, PsndLen, PicoOpt & 8);
 
   // Add in the stereo FM buffer
   if(PicoOpt & 1)
-    YM2612UpdateOne(PsndOut, PsndLen, PicoOpt & 8);
+    YM2612UpdateOne(PsndOut, PsndLen, PicoOpt & 8); */
 
 
   // dave's FM

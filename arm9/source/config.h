@@ -7,7 +7,8 @@
 
 // #define _ASM_DRAW2_C
 
-// #define ARM9_SOUND
+#define ARM9_SOUND
+#define _USE_DRZ80
 
 // #define USE_ZLIB
 

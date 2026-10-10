@@ -440,7 +440,7 @@ int PicoFrame()
 
   // clear sound buffer
 #ifdef ARM9_SOUND
-  if(PsndOut) memset(PsndOut, 0, (PicoOpt & 8) ? (PsndLen<<2) : (PsndLen<<1));
+  // if(PsndOut) memset(PsndOut, 0, (PicoOpt & 8) ? (PsndLen<<2) : (PsndLen<<1));
 #endif
 
   if(hints)
@@ -448,7 +448,7 @@ int PicoFrame()
   else PicoFrameSimple();
 
 #ifdef ARM9_SOUND
-  if(PsndOut) sound_render();
+  // if(PsndOut) sound_render();
 #endif
 
   return 0;

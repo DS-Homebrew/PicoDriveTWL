@@ -617,8 +617,8 @@ static int DoFrame()
 	PicoFrame();
 
 #ifdef ARM9_SOUND
-	if(PsndOut)
-		soundPlaySample((const void *)PsndOut, SoundFormat_16Bit, PsndLen, PsndRate, 127, 64, false, 0);
+	// if(PsndOut)
+	//	soundPlaySample((const void *)PsndOut, SoundFormat_16Bit, PsndLen, PsndRate, 127, 64, false, 0);
 #endif
 
 	// FramesDone++;
@@ -970,7 +970,7 @@ int EmulateInit()
 		PicoCartInsert(RomData,RomSize);
 		i = RomSize;
 #ifdef ARM9_SOUND
-		InitSound();
+		// InitSound();
 #endif
 		// Load SRAM
 		saveLoadGame(1,1);
