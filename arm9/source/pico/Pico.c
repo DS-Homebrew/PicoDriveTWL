@@ -32,6 +32,8 @@
 void PicoFrameFull() {}
 #endif
 
+#define _6BTN_OPT 0x20
+
 int PicoVer=0x0080;
 struct Pico Pico;
 // int PicoOpt=0xffffffff; // enable everything
@@ -39,7 +41,7 @@ struct Pico Pico;
 // int PicoOpt = 0; // enable nothing, scanline rendering (broken in new ver)
 // int PicoOpt=0x17; // mono sound 
 // int PicoOpt=0x1f; // stereo sound
-int PicoOpt = VIDEO_OPT | SOUND_OPT;
+int PicoOpt = VIDEO_OPT | SOUND_OPT | _6BTN_OPT;
 int PicoSkipFrame=0; // skip rendering frame?
 static int cycles_68k_vblank,cycles_z80_vblank,cycles_68k_block,cycles_z80_block,cycles_z80_line,z80lines;
 

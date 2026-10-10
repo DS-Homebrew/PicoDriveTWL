@@ -147,7 +147,7 @@ int compressSaveState(void)
 	res = (res != sizeof(Pico) ? -1 : 0);
 	fclose((FILE *) PmovFile);
 	*/
-	
+
 	// compressed routine
 	strm.zalloc = Z_NULL;
 	strm.zfree = Z_NULL;
@@ -305,7 +305,7 @@ int decompressSaveState(void)
 }
 #endif // USE_ZLIB
 
-int saveLoadGame(int load, int sram)
+int saveLoadGame(int load)
 {
 	return -1; // Somewhere in this code causes a crash
 
@@ -324,11 +324,11 @@ int saveLoadGame(int load, int sram)
 				break;
 			}
 		}
-		strcat(saveFname, sram ? ".srm" : ".pds");
+		strcat(saveFname, /* sram ? */ ".srm" /* : ".pds" */);
 		// printf("\x1b[0;0HSavename: %s\n",saveFname);
 	}
 
-	if(sram) {
+	// if(sram) {
 		if(load) {
 			if(UsingAppendedRom) {
 				for(i = 0; i < (int)(SRam.end - SRam.start + 1); i++) {
@@ -366,7 +366,7 @@ int saveLoadGame(int load, int sram)
 		}
 		PmovFile = 0;
 		return res;
-	}
+	/* }
 	else { // We're dealing with a save state
 		struct Cyclone *cpustate = &PicoCpu;
 		struct Pico *emustate = &Pico;
@@ -387,8 +387,8 @@ int saveLoadGame(int load, int sram)
 			fclose((FILE *) PmovFile);
 		}
 	}
-	
-	return 0;
+
+	return 0; */
 }
 
 static int32 cx=32,cy=16;
@@ -441,7 +441,7 @@ static void ChangeScaleMode()
 	}
 }
 
-void ChangeScreenPosition()
+/* void ChangeScreenPosition()
 {
 	scanKeys();
 	uint32 keysPressed;
@@ -486,7 +486,7 @@ void ChangeScreenPosition()
 		scanKeys();
 		swiWaitForVBlank();
 	}
-}
+} */
 
 void ConvertToGrayscale()
 {
@@ -514,7 +514,7 @@ void ConvertToGrayscale()
 	}
 }
 
-static int SaveStateMenu()
+/* static int SaveStateMenu()
 {
 	// TODO: Compressed save states for appended ROM mode
 	if(UsingAppendedRom) {
@@ -563,29 +563,33 @@ static int SaveStateMenu()
 	}
 	UpdatePalette();
 	return 0;
-}
+} */
 
 static int DoFrame()
 {
 	if(DEBUG)
 		printf("HIT DOFRAME\n");
 	int pad=0;
-	// char map[8]={0,1,2,3,5,6,4,7}; // u/d/l/r/b/c/a/start
+	// char map[12]={0,1,2,3,5,6,4,7}; // u/d/l/r/b/c/a/start/z/y/x/mode
 
 	scanKeys();
 	int keysPressed = keysHeld();
 	if (keysPressed){
 		int kd = keysDown();
-		if (keysPressed & KEY_UP) pad|=0x1;
-		else if (keysPressed & KEY_DOWN) pad|=0x2;
-		if (keysPressed & KEY_LEFT) pad|=0x4;
-		else if (keysPressed & KEY_RIGHT) pad|=0x8;
-		if (keysPressed & KEY_B) pad|=0x10;
-		if (keysPressed & KEY_A) pad|=0x20;
-		if (keysPressed & KEY_Y) pad|=0x40;
-		if (keysPressed & KEY_START) pad|=0x80;
+		if (keysPressed & KEY_UP) pad|=BIT(0);
+		else if (keysPressed & KEY_DOWN) pad|=BIT(1);
+		if (keysPressed & KEY_LEFT) pad|=BIT(2);
+		else if (keysPressed & KEY_RIGHT) pad|=BIT(3);
+		if (keysPressed & KEY_Y) pad|=BIT(6);
+		if (keysPressed & KEY_B) pad|=BIT(4);
+		if (keysPressed & KEY_A) pad|=BIT(5);
+		if (keysPressed & KEY_START) pad|=BIT(7);
+		if (keysPressed & KEY_L) pad|=BIT(10);
+		if (keysPressed & KEY_X) pad|=BIT(9);
+		if (keysPressed & KEY_R) pad|=BIT(8);
+		if (keysPressed & KEY_SELECT) pad|=BIT(11);
 
-		if (keysPressed & KEY_X) {
+		/* if (keysPressed & KEY_X) {
 			lcdSwap();	//Mod for GBMacro
 			SaveStateMenu();
 			lcdSwap();	//Mod for GBMacro
@@ -600,15 +604,16 @@ static int DoFrame()
 				scalemode = (scalemode + 1) % 2;
 				ChangeScaleMode();
 			}
-		}
-		
-		if (kd & KEY_SELECT) {
+		} */
+
+		// if (kd & KEY_SELECT) {
+		if (kd & KEY_TOUCH) {
 			choosingfile = 2;
 		}
-		
-		if (kd & KEY_TOUCH){
+
+		/* if (kd & KEY_TOUCH){
 			lcdSwap();
-		}
+		} */
 	}
 
 	PicoPad[0]=pad;
@@ -647,7 +652,7 @@ static int EmulateScanBG3(unsigned int scan,u8 *sdata)
 
 	// printf("\x1b[17;0HScanline: %d        ",scan);
 	// scan goes from 0 - 223
-	
+
 	/*
 	int i = 0;
 	for(i = 0; i < 320*2; i++) {
@@ -752,13 +757,13 @@ void EmulateFrame()
 	//Check if this frame should be skipped or not
 	//for (int i=0;i<frameCountForFrameSkip;i++) {
 	if (FPS < dsFrameCount){
-		for(int i=0;i<MAX_FRAMESKIP;i++){	
+		for(int i=0;i<MAX_FRAMESKIP;i++){
 			if (FPS == dsFrameCount-1) break;
 			PicoSkipFrame = 1;
 			DoFrame(); // Frame skip if needed
 			FPS++;
 		}
-		
+
 		PicoSkipFrame = 0;
 		if (Pico.m.dirtyPal) {
 			UpdatePalette();
@@ -777,7 +782,7 @@ void processtimer()
 
 void processvcount()
 {
-	
+
 }
 
 void processvblank()
@@ -919,13 +924,13 @@ int EmulateExit()
 	if(!UsingAppendedRom && FileChoose()) {
 		// Save SRAM
 		if(Pico.m.sram_changed) {
-			saveLoadGame(0,1);
+			saveLoadGame(0);
 			Pico.m.sram_changed = 0;
 		}
 
 		// Remove cartridge
 		PicoCartInsert(NULL,0);
-		
+
 		if (RomData && !UsingAppendedRom && !UsingExtendedMemory) {
 			//free(RomData); //PROBLEM!!!!
 			RomData=NULL; RomSize=0;
@@ -945,10 +950,10 @@ void LoadROMToMemory(uint16* location, int size)
 {
 	size=(size+3)&~3; // Round up to a multiple of 4
 	if (size > 0x404000) size = 0x404000;
-	
+
 	fseek(romfile,0,SEEK_SET);
 	fread(location,1,size,romfile);
-	
+
 	// Check for SMD:
 	if ((size&0x3fff)==0x200) {
 		DecodeSmd((unsigned char *)location,size); size-=0x200;
@@ -973,9 +978,9 @@ int EmulateInit()
 		// InitSound();
 #endif
 		// Load SRAM
-		saveLoadGame(1,1);
+		saveLoadGame(1);
 	}
-	else {	
+	else {
 		if(romfile != NULL) {
 			fseek(romfile,0,SEEK_END);
 			i = ftell(romfile);
@@ -1031,9 +1036,9 @@ int EmulateInit()
 		}
 
 		// Load SRAM
-		saveLoadGame(1,1);
+		saveLoadGame(1);
 	}
-	
+
 	printf("ROM Size: %d\n",i);
 	printf("ROM Header Info:\n");
 	for(i = 0; i < 128; i+=2) {
@@ -1042,10 +1047,10 @@ int EmulateInit()
 			printf("%c",RomData[0x100+i]);
 		}
 	}
-	
+
 	// printf("\n%#x\n",Pico.m.hardware);
 	// PrintRegion();
-	
+
 	// printf("\x1b[10;0H");
 	printf("\n\t\tPicoDriveTWL");
 	// printf(VERSION_NO);
@@ -1066,11 +1071,11 @@ int EmulateInit()
 void FindAppendedRom(void)
 {
 	printf("Appended ROM check...");
-	
+
 	sysSetBusOwners(BUS_OWNER_ARM9,BUS_OWNER_ARM9);
 
 	unsigned char *rom=NULL; int size=0;
-	
+
 	char *rompointer = (char *) GBAROM;
 	char *genheader;
 	bool foundrom = false;
@@ -1079,8 +1084,8 @@ void FindAppendedRom(void)
 	while (!foundrom && (rompointer != ((char *)(GBAROM+0x02000000)))) {
 		genheader = rompointer + 0x100; // Genesis ROM header is 0x100 in to the ROM
 		// check for "SEGA " at genheader location (without including "SEGA " in our compiled binary)
-		if( (*genheader == 'S') && (*(genheader+1) == 'E') && 
-			(*(genheader+2) == 'G') && (*(genheader+3) == 'A') && 
+		if( (*genheader == 'S') && (*(genheader+1) == 'E') &&
+			(*(genheader+2) == 'G') && (*(genheader+3) == 'A') &&
 			(*(genheader+4) == ' ') ) { // we have a match
 			printf("FOUND ROM!\n");
 			smdformat = false;
@@ -1105,13 +1110,13 @@ void FindAppendedRom(void)
 			// End/size of normal ROM should be a uint at 0x1a4
 			genheader = rompointer + 0x1a4;
 		}
-		
+
 		size = (*(genheader) << 24) | (*(genheader+1) << 16) | (*(genheader+2) << 8) | (*(genheader+3));
 		size=(size+3)&~3; // Round up to a multiple of 4
 		if(smdformat) {
 			size += 0x200; // add SMD header to size
 		}
-		
+
 		// This if check is kind of pointless, how many SC users
 		// are going to use appended ROMs if FAT works?
 		// Might be useful for some other card where we can detect
@@ -1126,7 +1131,7 @@ void FindAppendedRom(void)
 
 			memcpy(rom,rompointer,size);
 		}
-		
+
 		// Check for SMD:
 		if(smdformat) {
 			DecodeSmd(rom,size); // decode and byteswap SMD
@@ -1138,8 +1143,8 @@ void FindAppendedRom(void)
 		}
 
 		RomData = rom;
-		RomSize = size;	
-		
+		RomSize = size;
+
 		UsingAppendedRom = true;
 	}
 	else {
@@ -1158,7 +1163,7 @@ int main(int argc, char **argv)
 	//powerOn(POWER_ALL);
 
 	//struct mallinfo mi;
-	
+
 	// videoSetMode(MODE_FB0);
 	// vramSetBankA(VRAM_A_LCD);
 
@@ -1182,7 +1187,7 @@ int main(int argc, char **argv)
 	PicoPrepareCram = UpdatePalette;
 	PicoCramHigh = cram_high;
 #endif
-	
+
 #ifdef SW_SCAN_RENDERER
 	REG_BG3CNT = BG_BMP8_512x256;
 	PicoCramHigh = cram_high;
@@ -1192,18 +1197,18 @@ int main(int argc, char **argv)
 #ifdef HW_FRAME_RENDERER
 	REG_BG0CNT = BG_64x64 | BG_TILE_BASE(4) | BG_MAP_BASE(0) | BG_COLOR_256;
 	REG_BG3CNT = BgSize_R_512x512 | BG_TILE_BASE(4) | BG_MAP_BASE(0);
-	
+
 	uint16 val;
 	for(val = 0; val < 256; val++) {
 		BG_PALETTE[val] = RGB15(val%31,val%31,val%31);
 	}
-	
+
 	for(val = 0; val < (64*64); val++) {
 		((uint16*)BG_MAP_RAM(0))[val] = 0x0001; // 0x4000;
 	}
-	
+
 	for(val = 0; val < 128; val++) {
-		((uint16*)BG_TILE_RAM(4))[val] = 0x1e00;	
+		((uint16*)BG_TILE_RAM(4))[val] = 0x1e00;
 	}
 #endif
 
@@ -1256,9 +1261,9 @@ int main(int argc, char **argv)
 #ifdef ARM9_SOUND
 	PsndRate = 11025;
 #endif
-	
+
 	printf("\nTrying to init FAT...\n");
-	
+
 
 
 	if(fatInitDefault()) {
@@ -1266,7 +1271,7 @@ int main(int argc, char **argv)
 		romSpace = new char[0x304000];	// Allocate space for the ROM, or ROM bank cache
 
 		printf("\x1b[2J");
-		
+
 		if(chdir("/md/")){
 			chdir("/");
 		}
@@ -1297,7 +1302,7 @@ int main(int argc, char **argv)
 		if(!UsingAppendedRom) {
 			printf("\nNo way to load ROMs found.");
 			return 1;
-		}	
+		}
 	}
 
 	EmulateInit();
@@ -1322,7 +1327,7 @@ int main(int argc, char **argv)
 	offset = (char *)&Pico.vsram - (char *)&Pico;
 	printf("Pico.vsram: %x\n",offset);
 	offset = (char *)&Pico.cram - (char *)&Pico;
-	printf("Pico.cram: %x\n",offset); 
+	printf("Pico.cram: %x\n",offset);
 	*/
 
 	// u32 *testMem;
@@ -1351,7 +1356,7 @@ int main(int argc, char **argv)
 		// Save SRAM
 		if(Pico.m.sram_changed) {
 			// printf("\x1b[17:0HSaving SRAM");
-			saveLoadGame(0,1);
+			saveLoadGame(0);
 			Pico.m.sram_changed = 0;
 		}
 		// dmaCopy(BG_GFX,BG_GFX_SUB,512*256*2);
