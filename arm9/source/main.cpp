@@ -399,10 +399,12 @@ static void dosVibrate()
 		return;
 	}
 	s16 c = cosLerp(0) >> 4;
-	const int xSize = 316+sVibrate;
+	const int xSize = 316+(sVibrate ? 2 : 0);
+	const int xPos = sVibrate ? 1 : 2;
 	switch(scalemode) {
 	case 0: // aspect
 		REG_BG3PA = ( c * (xSize))>>8;
+		REG_BG3X = (xPos << 8);
 		break;
 	case 1: // 1:1
 	default:
@@ -414,10 +416,12 @@ static void dosVibrate()
 static void ChangeScaleMode()
 {
 	s16 c = cosLerp(0) >> 4;
-	int xSize = 316;
+	int xSize = 316+(sVibrate ? 2 : 0);
+	int xPos = sVibrate ? 1 : 2;
 	//int xPos = 0;
 	if (width256) {
 		xSize = 256;
+		xPos = 0;
 		//#ifdef SW_SCAN_RENDERER
 		//xPos = 32;
 		//#endif
@@ -426,7 +430,7 @@ static void ChangeScaleMode()
 	case 0: // aspect
 		REG_BG3PA = ( c * (xSize))>>8;
 		REG_BG3PD = ( c * (256))>>8;
-		REG_BG3X  = 0;
+		REG_BG3X  = (xPos << 8);
 		REG_BG3Y  = 0;
 		break;
 	case 1: // 1:1
