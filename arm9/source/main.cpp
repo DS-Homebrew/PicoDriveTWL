@@ -307,12 +307,10 @@ int decompressSaveState(void)
 
 int saveLoadGame(int load)
 {
-	return -1; // Somewhere in this code causes a crash
-
 	int i;
 	int res = 0;
 	FILE *PmovFile;
-	if(!UsingAppendedRom && !fileName) return -1;
+	if(!UsingAppendedRom && fileName[0]==0) return -1;
 
 	// make save filename
 	char saveFname[256];
