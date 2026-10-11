@@ -1,4 +1,10 @@
 # PicoDriveTWL
+<p align="center">
+  <a href="https://gbatemp.net/threads/picodrive-twl-sega-genesis-mega-drive-emulator-for-nintendo-ds-i.562377/">
+   <img src="https://img.shields.io/badge/GBAtemp-Thread-blue.svg" alt="GBAtemp Thread">
+  </a>
+</p>
+
 SEGA Genesis emulator for the Nintendo DS(i)
 
 # Credits
