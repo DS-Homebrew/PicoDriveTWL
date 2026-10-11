@@ -1275,10 +1275,6 @@ int main(int argc, char **argv)
 
 		printf("\x1b[2J");
 
-		if(chdir("/md/")){
-			chdir("/");
-		}
-
 		if (argc > 1) {
 			romfile=fopen(argv[1], "rb");
 
