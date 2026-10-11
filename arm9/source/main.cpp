@@ -1,3 +1,4 @@
+#define VERSION_NO "v2.1.0"
 #define DEBUG 0
 #define V_OFFSET 12
 #define H_OFFSET 8
@@ -1050,8 +1051,8 @@ int EmulateInit()
 	// PrintRegion();
 
 	// printf("\x1b[10;0H");
-	printf("\n\t\tPicoDriveTWL");
-	// printf(VERSION_NO);
+	printf("\n\t\tPicoDriveTWL ");
+	printf(VERSION_NO);
 	printf("\n");
 
 	cx = 32;
